@@ -1,0 +1,21 @@
+config:
+  storage: YAML
+  host: localhost
+  port: 3306
+  name: root
+  password:
+  database: quizplugin
+  useSSL: false
+
+interval: 900
+
+# 设置回答时发送的信息
+message:
+  # 已有玩家回答正确
+  hasWinner: "已有玩家回答正确！"
+  # 已回答过此问题
+  hasAnswered: "您已经回答过此问题！"
+  # 回答正确
+  correct: "回答正确，奖励已发放！"
+  # 回答错误
+  wrong: "回答错误！"

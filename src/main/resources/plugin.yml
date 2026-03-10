@@ -1,0 +1,17 @@
+name: QuizPlugin
+version: '1.0'
+main: org.rd806.quizplugin.QuizPlugin
+api-version: '1.20'
+authors: [ RunicDolphin806 ]
+
+commands:
+  quizplugin:
+    aliases: quiz
+
+permission:
+  # 回答权限
+  quizplugin.open:
+    default: true
+  # 查看权限
+  quizplugin.show:
+    default: false
