@@ -1,30 +1,29 @@
-package org.rd806.quizplugin.quiz;
+package org.rd806.quizplugin.quiz.storage;
 
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 import org.rd806.quizplugin.QuizPlugin;
+import org.rd806.quizplugin.quiz.QuizEntry;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class YamlControl {
+public class YamlControl implements QuizStorage {
 
     private List<Map<?, ?>> quizMap;
-    private final List<Quiz> quizList;
-    private int maxId;
-
+    private final List<QuizEntry> quizList;
 
     public YamlControl() {
         this.quizMap = new ArrayList<>();
         this.quizList = new ArrayList<>();
-        this.maxId = 0;
     }
 
-    public void setQuizList() {
+    @Override
+    public void setQuiz() {
         // 创建配置文件
         File quizFile = new File(QuizPlugin.main.getDataFolder(), "Quiz.yml");
         if (!quizFile.exists()) {
@@ -40,7 +39,7 @@ public class YamlControl {
         // 将文本转换成quizList
         int i = 1;
         for (Map<?, ?> tempMap : quizMap) {
-            Quiz tempQuiz = new Quiz();
+            QuizEntry tempQuiz = new QuizEntry();
             // 设置问题
             tempQuiz.setId(i);
             tempQuiz.setQuestion((String) tempMap.get("question"));
@@ -61,23 +60,26 @@ public class YamlControl {
                 ItemStack rewardItem = new ItemStack(rewardMaterial);
                 tempQuiz.setReward(rewardItem);
             }
-
+            // 将Quiz加入集合中
             quizList.add(tempQuiz);
-            i ++;
+            i++;
         }
+        int num = quizList.size() + 1;
 
-        maxId = quizList.size();
+        QuizPlugin.main.quizConfig.setMaxNum(num);
         QuizPlugin.logger.info("Quiz list initialized!");
-        QuizPlugin.logger.info("Quiz number: " + this.maxId);
+        QuizPlugin.logger.info("Quiz number: " + num);
     }
 
     // 获取特定的Quiz
-    public Quiz getQuizById(int id) {
+    @Override
+    public QuizEntry getQuizById(int id) {
         // List 默认从 0 开始编号
         return quizList.get(id - 1);
     }
 
     // 清空Quiz
+    @Override
     public void closeQuiz() {
         quizList.clear();
         quizMap.clear();

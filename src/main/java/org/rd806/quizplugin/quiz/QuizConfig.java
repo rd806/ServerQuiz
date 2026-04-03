@@ -10,9 +10,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.rd806.quizplugin.QuizPlugin;
-import org.rd806.quizplugin.database.DataSourceManager;
 import org.rd806.quizplugin.database.DatabaseConfig;
-import org.rd806.quizplugin.database.DatabaseInitial;
+import org.rd806.quizplugin.quiz.storage.StorageFactory;
 
 import java.util.Random;
 import java.util.UUID;
@@ -22,7 +21,6 @@ public class QuizConfig {
     private String storageType;
     private int interval;
     private int maxNum;
-
     private BukkitTask send;
 
     public QuizConfig() {
@@ -31,90 +29,43 @@ public class QuizConfig {
         this.maxNum = 0;
     }
 
+    // 初始化
     public void initial() {
-        if (this.storageType.equalsIgnoreCase("YAML")) {
-            YamlControl yamlControl = new YamlControl();
-            yamlControl.setQuizList();
-            QuizPlugin.logger.info("QuizPlugin uses YAML form!");
-        } else if (this.storageType.equalsIgnoreCase("MYSQL")) {
-            DatabaseConfig databaseConfig = new DatabaseConfig();
-            // 设置数据库信息
-            databaseConfig.setHost(QuizPlugin.config.getString("config.host",  "localhost"));
-            databaseConfig.setPort(QuizPlugin.config.getInt("config.port", 3036));
-            databaseConfig.setDatabase(QuizPlugin.config.getString("config.database", "quizplugin"));
-            databaseConfig.setUsername(QuizPlugin.config.getString("config.username", "root"));
-            databaseConfig.setPassword(QuizPlugin.config.getString("config.password", ""));
-            databaseConfig.setUseSSL(QuizPlugin.config.getBoolean("config.useSSL", false));
-            // 建立数据库连接
-            DataSourceManager dataSourceManager = new DataSourceManager(databaseConfig);
-            DatabaseInitial databaseInitial = new DatabaseInitial(dataSourceManager);
-            QuizPlugin.main.sqlControl = new SqlControl(dataSourceManager);
-            // 数据库初始化
-            databaseInitial.initialTable();
-            QuizPlugin.main.sqlControl.setQuiz();
-            maxNum = QuizPlugin.main.sqlControl.getMaxId();
-
-            QuizPlugin.logger.info("QuizPlugin uses MYSQL form!");
-        }
+        StorageFactory factory = new StorageFactory();
+        QuizPlugin.main.storage = factory.createQuizStorage(this.storageType, new DatabaseConfig());
+        QuizPlugin.main.storage.setQuiz();
     }
 
     // 发送随机Quzi
     public void sendRandomQuiz() {
         Random random = new Random();
         int id = random.nextInt(maxNum) + 1;
-
-        if (storageType.equalsIgnoreCase("YAML")) {
-            QuizPlugin.main.quiz = QuizPlugin.main.yamlControl.getQuizById(id);
-        }  else if (storageType.equalsIgnoreCase("MYSQL")) {
-            QuizPlugin.main.quiz = QuizPlugin.main.sqlControl.getQuizById(id);
-        }
-
+        QuizPlugin.main.quiz = getQuizById(id);
         QuizPlugin.logger.info("Sending random quiz: " + id);
         sendText();
     }
 
     // 发送特定Quiz
     public void sendSpecificQuiz(int id) {
-        // 非空检查
-        if (QuizPlugin.main.quiz == null || id > maxNum) {
-            QuizPlugin.logger.warning("Quiz id " + id + " is out of bounds or NOT FOUND!");
-            return;
-        }
-
-        if (storageType.equalsIgnoreCase("YAML")) {
-            QuizPlugin.main.quiz = QuizPlugin.main.yamlControl.getQuizById(id);
-        }  else if (storageType.equalsIgnoreCase("MYSQL")) {
-            QuizPlugin.main.quiz = QuizPlugin.main.sqlControl.getQuizById(id);
-        }
+        QuizPlugin.main.quiz = getQuizById(id);
         sendText();
     }
 
     // 获取特定Quiz
-    public Quiz getQuizById(int id) {
-        if (storageType.equalsIgnoreCase("YAML")) {
-            return QuizPlugin.main.yamlControl.getQuizById(id);
-        } else if (storageType.equalsIgnoreCase("MYSQL")) {
-            return QuizPlugin.main.sqlControl.getQuizById(id);
-        }
-        return null;
+    public QuizEntry getQuizById(int id) {
+        return QuizPlugin.main.storage.getQuizById(id);
     }
 
     // 重新加载Quiz
     public void reload() {
-        if (storageType.equalsIgnoreCase("YAML")) {
-            QuizPlugin.main.yamlControl.setQuizList();
-        }  else if (storageType.equalsIgnoreCase("MYSQL")) {
-            QuizPlugin.main.sqlControl.setQuiz();
-        }
+        QuizPlugin.main.storage.setQuiz();
+        send.cancel();
+        sendQuiz();
     }
 
     // 关闭Quiz系统
     public void closeQuiz() {
-        if (storageType.equalsIgnoreCase("YAML")) {
-            QuizPlugin.main.yamlControl.closeQuiz();
-        }  else if (storageType.equalsIgnoreCase("MYSQL")) {
-            QuizPlugin.main.sqlControl.closeQuiz();
-        }
+        QuizPlugin.main.storage.closeQuiz();
     }
 
     // 发送文本组件
@@ -137,7 +88,7 @@ public class QuizConfig {
             public void run() {
                 sendRandomQuiz();
             }
-        }.runTaskTimer(QuizPlugin.main, 0L, 20L * interval);
+        }.runTaskTimer(QuizPlugin.main, 0L, 20L * this.interval);
    }
 
     // 检查玩家是否回答正确
@@ -174,7 +125,7 @@ public class QuizConfig {
     }
 
     // 获取特定的Quiz信息
-    public void getQuizInfo(CommandSender sender, Quiz quiz) {
+    public void getQuizInfo(CommandSender sender, QuizEntry quiz) {
         sender.sendMessage("The chosen quiz id is: " + quiz.getId());
         sender.sendMessage("-----------------------");
         sender.sendMessage("Question: " + quiz.getQuestion());
@@ -195,5 +146,4 @@ public class QuizConfig {
 
     public int getMaxNum() { return this.maxNum; }
     public void setMaxNum(int maxNum) { this.maxNum = maxNum; }
-
 }

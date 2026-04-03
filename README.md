@@ -36,3 +36,13 @@ config:
   password: { your password }
   database: quizplugin
 ```
+
+## Command
+
+| Command            | Function                | Permission          |
+|--------------------|-------------------------|---------------------|
+| `/quiz open`       | open the answer menu    | `quizplugin.open`   |
+| `/quiz send <num>` | send a quiz             | `quizplugin.send`   |
+| `/quiz show`       | show the config details | `quizplugin.show`   |
+| `/quiz edit`       | edit the config         | `quizplugin.edit`   |
+| `/quiz reload`     | reload the config       | `quizplugin.reload` |

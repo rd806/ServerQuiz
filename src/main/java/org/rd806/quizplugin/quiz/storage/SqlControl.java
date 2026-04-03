@@ -1,9 +1,10 @@
-package org.rd806.quizplugin.quiz;
+package org.rd806.quizplugin.quiz.storage;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.rd806.quizplugin.QuizPlugin;
 import org.rd806.quizplugin.database.DataSourceManager;
+import org.rd806.quizplugin.quiz.QuizEntry;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -12,7 +13,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SqlControl {
+public class SqlControl implements QuizStorage {
 
     private final DataSourceManager dataSourceManager;
     private int maxId;
@@ -23,6 +24,7 @@ public class SqlControl {
     }
 
     // 初始化Quiz列表
+    @Override
     public void setQuiz() {
         String sql = "SELECT MAX(id) FROM quiz";
 
@@ -32,6 +34,7 @@ public class SqlControl {
 
             if (resultSet.next()) {
                 this.maxId = resultSet.getInt(1);
+                QuizPlugin.main.quizConfig.setMaxNum(this.maxId);
             }
 
             QuizPlugin.logger.info("Quiz list initialized!");
@@ -43,17 +46,18 @@ public class SqlControl {
     }
 
     // 根据id获取对应的Quiz
-    public Quiz getQuizById(int id) {
+    @Override
+    public QuizEntry getQuizById(int id) {
         String sql = "SELECT * FROM quiz WHERE id = ?";
 
-        try(Connection connection = dataSourceManager.getConnection();
+        try (Connection connection = dataSourceManager.getConnection();
             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setInt(1, id);
             ResultSet resultSet = statement.executeQuery();
 
             if (resultSet.next()) {
-                Quiz temp = new Quiz();
+                QuizEntry temp = new QuizEntry();
                 // 设置问题
                 temp.setId(resultSet.getInt("id"));
                 temp.setQuestion(resultSet.getString("question"));
@@ -81,10 +85,9 @@ public class SqlControl {
     }
 
     // 关闭数据库连接
+    @Override
     public void closeQuiz() {
         dataSourceManager.close();
         QuizPlugin.logger.info("Quiz list closed!");
     }
-
-    public int getMaxId() { return maxId; }
 }

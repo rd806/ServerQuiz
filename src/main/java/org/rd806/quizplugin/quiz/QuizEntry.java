@@ -4,7 +4,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
 
-public class Quiz {
+public class QuizEntry {
     // 基本信息
     private int id;
     private String question;
@@ -15,7 +15,7 @@ public class Quiz {
     private final Set<UUID> answeredPlayers;
     private UUID winner;
 
-    public Quiz() {
+    public QuizEntry() {
         this.id = -1;
         this.options = new ArrayList<>();
         this.answeredPlayers = new HashSet<>();
