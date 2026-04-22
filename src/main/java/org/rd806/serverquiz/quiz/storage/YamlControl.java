@@ -1,11 +1,11 @@
-package org.rd806.quizplugin.quiz.storage;
+package org.rd806.serverquiz.quiz.storage;
 
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
-import org.rd806.quizplugin.QuizPlugin;
-import org.rd806.quizplugin.quiz.QuizEntry;
+import org.rd806.serverquiz.ServerQuiz;
+import org.rd806.serverquiz.quiz.QuizEntry;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -25,15 +25,16 @@ public class YamlControl implements QuizStorage {
     @Override
     public void setQuiz() {
         // 创建配置文件
-        File quizFile = new File(QuizPlugin.main.getDataFolder(), "Quiz.yml");
+        File quizFile = new File(ServerQuiz.main.getDataFolder(), "Quiz.yml");
         if (!quizFile.exists()) {
-            QuizPlugin.main.saveResource("Quiz.yml", false);
+            ServerQuiz.main.saveResource("Quiz.yml", false);
         }
         FileConfiguration configuration = YamlConfiguration.loadConfiguration(quizFile);
-
+        // 清除quizList
+        quizList.clear();
         quizMap = configuration.getMapList("List");
         if (quizMap.isEmpty()) {
-            QuizPlugin.logger.warning("Quiz List is empty!");
+            ServerQuiz.logger.warning("Quiz List is empty!");
             return;
         }
         // 将文本转换成quizList
@@ -42,10 +43,10 @@ public class YamlControl implements QuizStorage {
             QuizEntry tempQuiz = new QuizEntry();
             // 设置问题
             tempQuiz.setId(i);
-            tempQuiz.setQuestion((String) tempMap.get("question"));
-            tempQuiz.setAnswer((String) tempMap.get("answer"));
+            tempQuiz.setQuestion((String) tempMap.get("Question"));
+            tempQuiz.setAnswer((String) tempMap.get("Answer"));
             // 设置选项
-            Map<?, ?> options = (Map<?, ?>) tempMap.get("options");
+            Map<?, ?> options = (Map<?, ?>) tempMap.get("Options");
             List<String> optionList = new ArrayList<>();
             optionList.add((String) options.get("A"));
             optionList.add((String) options.get("B"));
@@ -53,7 +54,7 @@ public class YamlControl implements QuizStorage {
             optionList.add((String) options.get("D"));
             tempQuiz.setOptions(optionList);
             // 设置奖品
-            Object rewardObj = tempMap.get("reward");
+            Object rewardObj = tempMap.get("Reward");
             String rewardName = rewardObj.toString();
             Material rewardMaterial = Material.matchMaterial(rewardName);
             if (rewardMaterial != null) {
@@ -64,11 +65,11 @@ public class YamlControl implements QuizStorage {
             quizList.add(tempQuiz);
             i++;
         }
-        int num = quizList.size() + 1;
+        int num = quizList.size();
 
-        QuizPlugin.main.quizConfig.setMaxNum(num);
-        QuizPlugin.logger.info("Quiz list initialized!");
-        QuizPlugin.logger.info("Quiz number: " + num);
+        ServerQuiz.main.quizConfig.setMaxNum(num);
+        ServerQuiz.logger.info("Quiz list initialized!");
+        ServerQuiz.logger.info("Quiz number: " + num);
     }
 
     // 获取特定的Quiz

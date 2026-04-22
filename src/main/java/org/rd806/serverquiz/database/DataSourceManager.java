@@ -1,4 +1,4 @@
-package org.rd806.quizplugin.database;
+package org.rd806.serverquiz.database;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;

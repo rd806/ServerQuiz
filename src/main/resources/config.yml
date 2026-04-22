@@ -4,7 +4,7 @@ config:
   port: 3306
   name: root
   password:
-  database: quizplugin
+  database: serverquiz
   useSSL: false
 
 interval: 900

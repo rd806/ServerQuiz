@@ -1,4 +1,4 @@
-package org.rd806.quizplugin.command;
+package org.rd806.serverquiz.command;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -14,7 +14,7 @@ public class QuizTabCompleter implements TabCompleter {
     public List<String> onTabComplete(@NonNull CommandSender sender, @NonNull Command command, @NonNull String alias, String @NonNull [] args) {
         List<String> completions = new ArrayList<>();
 
-        if (command.getName().equalsIgnoreCase("quizplugin") || command.getName().equalsIgnoreCase("quiz")) {
+        if (command.getName().equalsIgnoreCase("serverquiz") || command.getName().equalsIgnoreCase("quiz")) {
             if (args.length == 1) {
                 AddCompletions(completions, "send", "open", "show", "edit", "reload");
                 return completions;

@@ -1,4 +1,4 @@
-package org.rd806.quizplugin.database;
+package org.rd806.serverquiz.database;
 
 public class DatabaseConfig {
     // 网络参数

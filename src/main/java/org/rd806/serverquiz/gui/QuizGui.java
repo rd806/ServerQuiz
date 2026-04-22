@@ -1,4 +1,4 @@
-package org.rd806.quizplugin.gui;
+package org.rd806.serverquiz.gui;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -7,7 +7,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.rd806.quizplugin.QuizPlugin;
+import org.rd806.serverquiz.ServerQuiz;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,7 +15,7 @@ import java.util.List;
 
 public class QuizGui {
 
-    private final QuizPlugin plugin = QuizPlugin.main;
+    private final ServerQuiz plugin = ServerQuiz.main;
     private final Inventory quizMenu;
 
     public QuizGui() {

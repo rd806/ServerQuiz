@@ -1,6 +1,6 @@
-package org.rd806.quizplugin.database;
+package org.rd806.serverquiz.database;
 
-import org.rd806.quizplugin.QuizPlugin;
+import org.rd806.serverquiz.ServerQuiz;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -44,9 +44,9 @@ public class DatabaseInitial {
             statement.execute(createQuizTable);
             statement.execute(createScoreTable);
 
-            QuizPlugin.logger.info("Database initiated!");
+            ServerQuiz.logger.info("Database initiated!");
         } catch (SQLException e) {
-            QuizPlugin.logger.warning("Database initiated failed!");
+            ServerQuiz.logger.warning("Database initiated failed!");
             throw new RuntimeException(e);
         }
     }

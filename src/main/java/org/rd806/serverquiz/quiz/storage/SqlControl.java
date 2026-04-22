@@ -1,10 +1,10 @@
-package org.rd806.quizplugin.quiz.storage;
+package org.rd806.serverquiz.quiz.storage;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
-import org.rd806.quizplugin.QuizPlugin;
-import org.rd806.quizplugin.database.DataSourceManager;
-import org.rd806.quizplugin.quiz.QuizEntry;
+import org.rd806.serverquiz.ServerQuiz;
+import org.rd806.serverquiz.database.DataSourceManager;
+import org.rd806.serverquiz.quiz.QuizEntry;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -34,14 +34,14 @@ public class SqlControl implements QuizStorage {
 
             if (resultSet.next()) {
                 this.maxId = resultSet.getInt(1);
-                QuizPlugin.main.quizConfig.setMaxNum(this.maxId);
+                ServerQuiz.main.quizConfig.setMaxNum(this.maxId);
             }
 
-            QuizPlugin.logger.info("Quiz list initialized!");
-            QuizPlugin.logger.info("Quiz number: " + this.maxId);
+            ServerQuiz.logger.info("Quiz list initialized!");
+            ServerQuiz.logger.info("Quiz number: " + this.maxId);
 
         } catch (SQLException e) {
-            QuizPlugin.logger.warning("Quiz list initialized failed!" + e.getMessage());
+            ServerQuiz.logger.warning("Quiz list initialized failed!" + e.getMessage());
         }
     }
 
@@ -79,7 +79,7 @@ public class SqlControl implements QuizStorage {
                 return temp;
             }
         } catch (SQLException e) {
-            QuizPlugin.logger.warning("Quiz list initialized failed!" + e.getMessage());
+            ServerQuiz.logger.warning("Quiz list initialized failed!" + e.getMessage());
         }
         return null;
     }
@@ -88,6 +88,6 @@ public class SqlControl implements QuizStorage {
     @Override
     public void closeQuiz() {
         dataSourceManager.close();
-        QuizPlugin.logger.info("Quiz list closed!");
+        ServerQuiz.logger.info("Quiz list closed!");
     }
 }

@@ -25,7 +25,7 @@ List:
     Reward: DIAMOND
 ```
 
-Or if you prefer `MYSQL`, please create a new database named `quizplugin` and set your basic config:
+Or if you prefer `MYSQL`, please create a new database named `serverquiz` and set your basic config:
 
 ```yaml
 config:
@@ -34,15 +34,15 @@ config:
   port: { your port }
   name: { your name }
   password: { your password }
-  database: quizplugin
+  database: serverquiz
 ```
 
 ## Command
 
 | Command            | Function                | Permission          |
 |--------------------|-------------------------|---------------------|
-| `/quiz open`       | open the answer menu    | `quizplugin.open`   |
-| `/quiz send <num>` | send a quiz             | `quizplugin.send`   |
-| `/quiz show`       | show the config details | `quizplugin.show`   |
-| `/quiz edit`       | edit the config         | `quizplugin.edit`   |
-| `/quiz reload`     | reload the config       | `quizplugin.reload` |
+| `/quiz open`       | open the answer menu    | `serverquiz.open`   |
+| `/quiz send <num>` | send a quiz             | `serverquiz.send`   |
+| `/quiz show`       | show the config details | `serverquiz.show`   |
+| `/quiz edit`       | edit the config         | `serverquiz.edit`   |
+| `/quiz reload`     | reload the config       | `serverquiz.reload` |

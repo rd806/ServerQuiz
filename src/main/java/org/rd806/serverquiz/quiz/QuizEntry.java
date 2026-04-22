@@ -1,4 +1,4 @@
-package org.rd806.quizplugin.quiz;
+package org.rd806.serverquiz.quiz;
 
 import org.bukkit.inventory.ItemStack;
 
