@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.rd806.serverquiz.ServerQuiz;
-import org.rd806.serverquiz.quiz.QuizEntry;
+import org.rd806.serverquiz.quiz.content.QuizEntry;
 
 public class QuizCommand implements CommandExecutor {
 

@@ -9,12 +9,14 @@ Generally, you can regard it as a simple **Database Management System**, which m
 
 ## Configuration
 
-The Q&A system has two ways to storage data: YAML, MYSQL.
+The Q&A system has two ways to storage data: YAML, MYSQL. 
+
+> Since plugin version 1.1.0, fill-in-the-blanks quiz has been supported!
 
 If you choose `YAML` type, please set your quiz at `Quiz.yml` in the format below:
 
 ```yaml
-List:
+Choice:
   - Question: "Which of the following is not a valid IP address?"
     Options:
       A: "172.28.45.56"
@@ -22,6 +24,11 @@ List:
       C: "240e:360:6f43:500:d14d:dbd0:97:b3b3"
       D: "127.256.3.34"
     Answer: D
+    Reward: DIAMOND
+
+Blank:
+  - Question: "1+1=?"
+    Answer: "2"
     Reward: DIAMOND
 ```
 

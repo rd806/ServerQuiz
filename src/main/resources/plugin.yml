@@ -1,5 +1,5 @@
 name: ServerQuiz
-version: '1.0'
+version: '1.1.0'
 main: org.rd806.serverquiz.ServerQuiz
 api-version: '1.20'
 authors: [ RunicDolphin806 ]

@@ -11,6 +11,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.rd806.serverquiz.ServerQuiz;
 import org.rd806.serverquiz.database.DatabaseConfig;
+import org.rd806.serverquiz.quiz.content.QuizEntry;
 import org.rd806.serverquiz.quiz.storage.StorageFactory;
 
 import java.util.Random;
@@ -129,11 +130,16 @@ public class QuizConfig {
         sender.sendMessage("The chosen quiz id is: " + quiz.getId());
         sender.sendMessage("-----------------------");
         sender.sendMessage("Question: " + quiz.getQuestion());
-        sender.sendMessage("Option A: " + quiz.getOptions().get(0));
-        sender.sendMessage("Option B: " + quiz.getOptions().get(1));
-        sender.sendMessage("Option C: " + quiz.getOptions().get(2));
-        sender.sendMessage("Option D: " + quiz.getOptions().get(3));
-        sender.sendMessage("Answer: " + quiz.getAnswer());
+        switch (quiz.getType()) {
+            case Choice -> {
+                sender.sendMessage("Option A: " + quiz.getOptions().get(0));
+                sender.sendMessage("Option B: " + quiz.getOptions().get(1));
+                sender.sendMessage("Option C: " + quiz.getOptions().get(2));
+                sender.sendMessage("Option D: " + quiz.getOptions().get(3));
+                sender.sendMessage("Answer: " + quiz.getAnswer());
+            }
+            case Blank -> sender.sendMessage("Answer: " + quiz.getAnswer());
+        }
         sender.sendMessage("Reward: " + quiz.getReward().toString());
         sender.sendMessage("-----------------------");
     }

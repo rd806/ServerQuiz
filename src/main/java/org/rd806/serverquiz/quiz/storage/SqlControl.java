@@ -4,7 +4,7 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.rd806.serverquiz.ServerQuiz;
 import org.rd806.serverquiz.database.DataSourceManager;
-import org.rd806.serverquiz.quiz.QuizEntry;
+import org.rd806.serverquiz.quiz.content.QuizEntry;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

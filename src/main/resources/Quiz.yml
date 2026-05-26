@@ -1,4 +1,4 @@
-List:
+Choice:
   - Question: "Which of the following is not a valid IP address?"
     Options:
       A: "172.28.45.56"
@@ -14,4 +14,9 @@ List:
       C: "240e:360:6f43:500:d14d:dbd0:97:b3b3"
       D: "127.256.3.34"
     Answer: D
+    Reward: DIAMOND
+
+Blank:
+  - Question: "What's the answer of 1+1=?"
+    Answer: "2"
     Reward: DIAMOND

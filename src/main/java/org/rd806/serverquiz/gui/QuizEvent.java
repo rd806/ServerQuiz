@@ -39,6 +39,9 @@ public class QuizEvent implements Listener {
                     response = "D";
                     ServerQuiz.main.quizConfig.check(player, response);
                     break;
+                case ANVIL:
+                    ServerQuiz.main.quizGui.createGUI(player);
+                    break;
                 default:
                     break;
             }

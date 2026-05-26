@@ -1,6 +1,6 @@
 package org.rd806.serverquiz.quiz.storage;
 
-import org.rd806.serverquiz.quiz.QuizEntry;
+import org.rd806.serverquiz.quiz.content.QuizEntry;
 
 public interface QuizStorage {
 

@@ -8,7 +8,7 @@ import org.rd806.serverquiz.command.QuizTabCompleter;
 import org.rd806.serverquiz.gui.QuizEvent;
 import org.rd806.serverquiz.gui.QuizGui;
 import org.rd806.serverquiz.quiz.QuizConfig;
-import org.rd806.serverquiz.quiz.QuizEntry;
+import org.rd806.serverquiz.quiz.content.QuizEntry;
 import org.rd806.serverquiz.quiz.storage.QuizStorage;
 
 import java.util.Objects;
