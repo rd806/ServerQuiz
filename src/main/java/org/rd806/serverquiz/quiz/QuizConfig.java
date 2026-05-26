@@ -71,11 +71,11 @@ public class QuizConfig {
     // 发送文本组件
     private void sendText() {
         // 创建可点击的文本组件
-        TextComponent message = new TextComponent("§e============\n§6§l新一轮Quiz开始啦！\n【点击这里】§r§e打开Quiz界面！\n============");
+        TextComponent message = new TextComponent("§e============\n§6§lNew Quiz begins！\n【Click here】 to join§r§e\n============");
         // 点击事件：玩家点击后会自动输入并执行此命令
         message.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/serverquiz open"));
         // 悬浮文本
-        message.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("§7点击参加Quiz！")));
+        message.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("§7Click to join Quiz！")));
         ServerQuiz.main.getServer().spigot().broadcast(message);
     }
 

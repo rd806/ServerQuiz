@@ -25,22 +25,22 @@ public class QuizGui {
     // Quiz界面
     public Inventory createQuizMenu(Player player) {
         // 左上角
-        AddItemToMenu(quizMenu, 0, Material.CRAFTING_TABLE, "有奖问答！",
-                "点击对应的选项方块回答问题",
-                "答对有奖！");
+        AddItemToMenu(quizMenu, 0, Material.CRAFTING_TABLE, "ServerQuiz！",
+                "Click the choice block to answer the Quiz",
+                "Win the reward if your answer is correct!");
         // 设置题目
-        AddItemToMenu(quizMenu, 4, Material.PAPER, "§r题目", "§r§b" + plugin.quiz.getQuestion());
+        AddItemToMenu(quizMenu, 4, Material.PAPER, "§rQuestion", "§r§b" + plugin.quiz.getQuestion());
         // 设置奖品
-        AddItemToMenu(quizMenu, 8, plugin.quiz.getReward().getType(), "§r奖品", "货真价实！");
+        AddItemToMenu(quizMenu, 8, plugin.quiz.getReward().getType(), "§rReward");
         // 设置选项
-        AddItemToMenu(quizMenu, 19, Material.RED_WOOL, "§r选项A",  "§r§b" + plugin.quiz.getOptions().get(0));
-        AddItemToMenu(quizMenu, 21, Material.YELLOW_WOOL, "§r选项B", "§r§b" + plugin.quiz.getOptions().get(1));
-        AddItemToMenu(quizMenu, 23, Material.BLUE_WOOL, "§r选项C", "§r§b" + plugin.quiz.getOptions().get(2));
-        AddItemToMenu(quizMenu, 25, Material.GREEN_WOOL, "§r选项D", "§r§b" + plugin.quiz.getOptions().get(3));
+        AddItemToMenu(quizMenu, 19, Material.RED_WOOL, "§rOption A",  "§r§b" + plugin.quiz.getOptions().get(0));
+        AddItemToMenu(quizMenu, 21, Material.YELLOW_WOOL, "§rOption B", "§r§b" + plugin.quiz.getOptions().get(1));
+        AddItemToMenu(quizMenu, 23, Material.BLUE_WOOL, "§rOption C", "§r§b" + plugin.quiz.getOptions().get(2));
+        AddItemToMenu(quizMenu, 25, Material.GREEN_WOOL, "§rOption D", "§r§b" + plugin.quiz.getOptions().get(3));
         // 玩家信息（左下角）
         quizMenu.setItem(36, createPlayerHead(player));
         // 插件信息（右下角）
-        AddItemToMenu(quizMenu, 44, Material.REDSTONE_BLOCK, "关于插件", "点击访问插件仓库");
+        AddItemToMenu(quizMenu, 44, Material.REDSTONE_BLOCK, "About the plugin", "Click to view the source code!");
 
         return quizMenu;
     }
@@ -73,11 +73,11 @@ public class QuizGui {
             skullMeta.setOwningPlayer(player);
             skullMeta.setDisplayName(player.getName());
             skullMeta.setLore(Arrays.asList(
-                    "§7点击查看您的玩家信息",
+                    "§7Click to show your player info",
                     "",
-                    "§e玩家: §f" + player.getName(),
-                    "§e等级: §f" + player.getLevel(),
-                    "§e生命值: §f" + String.format("%.1f", player.getHealth()) + "❤"
+                    "§ePlayer: §f" + player.getName(),
+                    "§eLevel: §f" + player.getLevel(),
+                    "§eHealth: §f" + String.format("%.1f", player.getHealth()) + "❤"
             ));
             head.setItemMeta(skullMeta);
         }
