@@ -40,7 +40,6 @@ tasks {
 shadowJar {
     // 重命名依赖包，避免冲突
     relocate 'com.zaxxer.hikari', 'org.rd806.libs.hikari'
-    relocate 'org.slf4j', 'org.rd806.libs.slf4j'
     relocate 'com.mysql', 'org.rd806.libs.mysql'
     relocate 'com.google', 'org.rd806.libs.google'
     relocate 'net.wesjd.anvilgui', 'org.rd806.libs.anvilgui'

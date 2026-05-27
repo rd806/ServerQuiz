@@ -5,6 +5,7 @@ import org.bukkit.inventory.ItemStack;
 import org.rd806.serverquiz.ServerQuiz;
 import org.rd806.serverquiz.database.DataSourceManager;
 import org.rd806.serverquiz.quiz.content.QuizEntry;
+import org.rd806.serverquiz.quiz.content.QuizType;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -16,24 +17,33 @@ import java.util.List;
 public class SqlControl implements QuizStorage {
 
     private final DataSourceManager dataSourceManager;
+    private int choiceId;
+    private int blankId;
     private int maxId;
 
     public SqlControl(DataSourceManager dataSourceManager) {
         this.dataSourceManager = dataSourceManager;
+        this.choiceId = 0;
+        this.blankId = 0;
         this.maxId = 0;
     }
 
     // 初始化Quiz列表
     @Override
     public void setQuiz() {
-        String sql = "SELECT MAX(id) FROM quiz";
+        String sql1 = "SELECT MAX(id) FROM choice";
+        String sql2 = "SELECT MAX(id) FROM blank";
 
         try(Connection connection = dataSourceManager.getConnection();
-            PreparedStatement statement = connection.prepareStatement(sql);
-            ResultSet resultSet = statement.executeQuery()) {
+            PreparedStatement statement1 = connection.prepareStatement(sql1);
+            PreparedStatement statement2 = connection.prepareStatement(sql2);
+            ResultSet resultSet1 = statement1.executeQuery();
+            ResultSet resultSet2 = statement2.executeQuery()) {
 
-            if (resultSet.next()) {
-                this.maxId = resultSet.getInt(1);
+            if (resultSet1.next() && resultSet2.next()) {
+                this.choiceId = resultSet1.getInt(1);
+                this.blankId = resultSet2.getInt(1);
+                this.maxId = choiceId + blankId;
                 ServerQuiz.main.quizConfig.setMaxNum(this.maxId);
             }
 
@@ -48,12 +58,36 @@ public class SqlControl implements QuizStorage {
     // 根据id获取对应的Quiz
     @Override
     public QuizEntry getQuizById(int id) {
-        String sql = "SELECT * FROM quiz WHERE id = ?";
+        String sql;
+
+        if (id < 1 || id > maxId) {
+            ServerQuiz.logger.warning("Quiz id out of range!");
+            return null;
+        }
+
+        if (id <= choiceId) {
+            sql = """
+                SELECT 'choice' AS type, id, question, option_a, option_b, option_c, option_d, answer, reward
+                FROM choice
+                WHERE id = ?
+                """;
+        } else {
+            sql = """
+                SELECT 'blank' AS type, id, question, NULL AS option_a, NULL AS option_b, NULL AS option_c, NULL AS option_d, answer, reward
+                FROM blank
+                WHERE id = ?
+                """;
+        }
 
         try (Connection connection = dataSourceManager.getConnection();
             PreparedStatement statement = connection.prepareStatement(sql)) {
 
-            statement.setInt(1, id);
+            if (id <= choiceId) {
+                statement.setInt(1, id);
+            } else {
+                statement.setInt(1, id - choiceId);
+            }
+
             ResultSet resultSet = statement.executeQuery();
 
             if (resultSet.next()) {
@@ -62,13 +96,7 @@ public class SqlControl implements QuizStorage {
                 temp.setId(resultSet.getInt("id"));
                 temp.setQuestion(resultSet.getString("question"));
                 temp.setAnswer(resultSet.getString("answer"));
-                // 设置选项
-                List<String> options = new ArrayList<>();
-                options.add(resultSet.getString("option_a"));
-                options.add(resultSet.getString("option_b"));
-                options.add(resultSet.getString("option_c"));
-                options.add(resultSet.getString("option_d"));
-                temp.setOptions(options);
+
                 // 设置奖励
                 String rewardName = resultSet.getString("reward");
                 Material rewardMaterial = Material.matchMaterial(rewardName.toUpperCase());
@@ -76,6 +104,21 @@ public class SqlControl implements QuizStorage {
                     ItemStack rewardItem = new ItemStack(rewardMaterial);
                     temp.setReward(rewardItem);
                 }
+
+                String type = resultSet.getString("type");
+                if (type.equals("choice")) {
+                    // 设置选项
+                    temp.setType(QuizType.Choice);
+                    List<String> options = new ArrayList<>();
+                    options.add(resultSet.getString("option_a"));
+                    options.add(resultSet.getString("option_b"));
+                    options.add(resultSet.getString("option_c"));
+                    options.add(resultSet.getString("option_d"));
+                    temp.setOptions(options);
+                } else {
+                    temp.setType(QuizType.Blank);
+                }
+
                 return temp;
             }
         } catch (SQLException e) {

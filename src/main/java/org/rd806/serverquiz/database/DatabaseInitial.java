@@ -17,9 +17,9 @@ public class DatabaseInitial {
     public void initialTable() {
         try(Connection connection = dataSourceManager.getConnection();
             Statement statement = connection.createStatement()) {
-            // 创建Quiz表
-            String createQuizTable = """
-                    CREATE TABLE IF NOT EXISTS quiz (
+            // 创建选择题表
+            String createChoiceQuizTable = """
+                    CREATE TABLE IF NOT EXISTS choice (
                         id INT PRIMARY KEY AUTO_INCREMENT,
                         question TEXT,
                         option_a VARCHAR(255),
@@ -27,6 +27,15 @@ public class DatabaseInitial {
                         option_c VARCHAR(255),
                         option_d VARCHAR(255),
                         answer CHAR(1),
+                        reward VARCHAR(255)
+                    )
+                    """;
+            // 创建填空题表
+            String createBlankQuizTable = """
+                    CREATE TABLE IF NOT EXISTS blank (
+                        id INT PRIMARY KEY AUTO_INCREMENT,
+                        question TEXT,
+                        answer VARCHAR(255),
                         reward VARCHAR(255)
                     )
                     """;
@@ -41,7 +50,8 @@ public class DatabaseInitial {
                     )
                     """;
 
-            statement.execute(createQuizTable);
+            statement.execute(createChoiceQuizTable);
+            statement.execute(createBlankQuizTable);
             statement.execute(createScoreTable);
 
             ServerQuiz.logger.info("Database initiated!");
