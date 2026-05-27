@@ -15,3 +15,6 @@ permission:
   # 查看权限
   serverquiz.show:
     default: false
+  # 编辑权限
+  serverquiz.edit:
+    default: false

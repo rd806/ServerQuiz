@@ -116,6 +116,16 @@ public class YamlControl implements QuizStorage {
         return tempQuiz;
     }
 
+    @Override
+    public boolean addChoiceQuiz(String question, String optionA, String optionB, String optionC, String optionD, String answer, String reward) {
+        return false;
+    }
+
+    @Override
+    public boolean addBlankQuiz(String question, String answer, String reward) {
+        return false;
+    }
+
     // 清空Quiz
     @Override
     public void closeQuiz() {

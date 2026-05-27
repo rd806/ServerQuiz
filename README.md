@@ -50,7 +50,9 @@ config:
 | Command            | Function                | Permission          |
 |--------------------|-------------------------|---------------------|
 | `/quiz open`       | open the answer menu    | `serverquiz.open`   |
-| `/quiz send <num>` | send a quiz             | `serverquiz.send`   |
+| `/quiz send <num>` | send a quiz             | `serverquiz.edit`   |
 | `/quiz show`       | show the config details | `serverquiz.show`   |
 | `/quiz edit`       | edit the config         | `serverquiz.edit`   |
-| `/quiz reload`     | reload the config       | `serverquiz.reload` |
+| `/quiz reload`     | reload the config       | `serverquiz.edit`   |
+
+> Since version 1.1.1, you can change quiz in the game using command `/quiz edit choice` or `/quiz edit blank`. However, this function is still in development. You'd better do it through Database Manager.

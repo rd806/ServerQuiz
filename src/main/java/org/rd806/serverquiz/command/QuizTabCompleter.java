@@ -16,19 +16,43 @@ public class QuizTabCompleter implements TabCompleter {
 
         if (command.getName().equalsIgnoreCase("serverquiz") || command.getName().equalsIgnoreCase("quiz")) {
             if (args.length == 1) {
-                AddCompletions(completions, "send", "open", "show", "edit", "reload");
+                AddCompletions(completions, "initial", "send", "open", "show", "edit", "reload");
                 return completions;
             } else if (args.length == 2) {
                 switch (args[0]) {
                     case "send":
-                        AddCompletions(completions, "<num>");
+                        AddCompletions(completions, "<question ID>");
                         return completions;
                     case "show":
                         AddCompletions(completions, "num", "interval", "storage", "info");
                         return completions;
                     case "edit":
-                        AddCompletions(completions, "interval", "storage");
+                        AddCompletions(completions, "interval", "storage", "choice", "blank");
                         return completions;
+                }
+            }  else if (args.length == 3) {
+                switch (args[1]) {
+                    case "choice", "blank":
+                        AddCompletions(completions, "insert", "alter", "delete");
+                        return completions;
+                }
+            } else if (args.length >= 4) {
+                if (args[1].equals("choice")) {
+                    switch (args[2]) {
+                        case "insert":
+                            AddCompletions(completions, "<question> <optionA> <optionB> <optionC> <optionD> <answer> <reward>");
+                            return completions;
+                        case "alter":
+                        case "delete":
+                    }
+                } else if (args[1].equals("blank")) {
+                    switch (args[2]) {
+                        case "insert":
+                            AddCompletions(completions, "<question> <answer> <reward>");
+                            return completions;
+                        case "alter":
+                        case "delete":
+                    }
                 }
             }
         }

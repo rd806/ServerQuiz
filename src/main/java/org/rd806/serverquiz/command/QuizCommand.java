@@ -16,12 +16,26 @@ public class QuizCommand implements CommandExecutor {
 
         Player player;
 
+        // 加载Quiz
+        if (args[0].equals("initial")) {
+            if (sender instanceof Player) {
+                player = (Player) sender;
+                if (!player.hasPermission("serverquiz.edit")) {
+                    sender.sendMessage("§cYou do not have permission \"serverquiz.edit\" to use this command.");
+                    return false;
+                }
+            }
+            ServerQuiz.main.quizConfig.initial();
+            sender.sendMessage("Quiz has been initialized.");
+            return true;
+        }
+
         // 发送Quiz
         if (args[0].equals("send")) {
             if (sender instanceof Player) {
                 player = (Player) sender;
-                if (!player.hasPermission("serverquiz.send")) {
-                    sender.sendMessage("§cYou do not have permission \"serverquiz.send\" to use this command.");
+                if (!player.hasPermission("serverquiz.edit")) {
+                    sender.sendMessage("§cYou do not have permission \"serverquiz.edit\" to use this command.");
                     return false;
                 }
             }
@@ -123,6 +137,7 @@ public class QuizCommand implements CommandExecutor {
             if (sender instanceof Player) {
                 player = (Player) sender;
                 if (!player.hasPermission("serverquiz.edit")) {
+                    sender.sendMessage("§cYou do not have permission \"serverquiz.edit\" to use this command.");
                     return false;
                 }
             }
@@ -138,6 +153,48 @@ public class QuizCommand implements CommandExecutor {
                 ServerQuiz.main.quizConfig.setStorageType(storage);
                 sender.sendMessage("The storage type of the Quiz has been set to" + storage);
             }
+            // 修改选择题
+            if (args[1].equals("choice")) {
+                switch (args[2]) {
+                    case "insert" -> {
+                        String question = args[3];
+                        String optionA = args[4];
+                        String optionB = args[5];
+                        String optionC = args[6];
+                        String optionD = args[7];
+                        String answer = args[8];
+                        String reward = args[9];
+                        if (ServerQuiz.main.quizConfig.addChoiceQuiz(question, optionA, optionB, optionC, optionD, answer, reward)) {
+                            sender.sendMessage("The choice quiz has been added!");
+                            sender.sendMessage("Please use /quiz initial to enable the change");
+                            return true;
+                        } else {
+                            sender.sendMessage("Failed to add choice quiz!");
+                            return false;
+                        }
+                    }
+                    case "delete" -> {}
+                }
+            }
+            // 修改填空题
+            if (args[1].equals("blank")) {
+                switch (args[2]) {
+                    case "insert" -> {
+                        String question = args[3];
+                        String answer = args[4];
+                        String reward = args[5];
+                        if (ServerQuiz.main.quizConfig.addBlankQuiz(question, answer, reward)) {
+                            sender.sendMessage("The blank quiz has been added!");
+                            sender.sendMessage("Please use /quiz initial to enable the change");
+                            return true;
+                        } else  {
+                            sender.sendMessage("Failed to add blank quiz!");
+                            return false;
+                        }
+                    }
+                    case "delete" -> {}
+                }
+            }
 
             sender.sendMessage("Please use /quiz reload command to enable your changes!");
             return true;
@@ -147,7 +204,8 @@ public class QuizCommand implements CommandExecutor {
         if (args[0].equals("reload")) {
             if (sender instanceof Player) {
                 player = (Player) sender;
-                if (!player.hasPermission("serverquiz.reload")) {
+                if (!player.hasPermission("serverquiz.edit")) {
+                    sender.sendMessage("§cYou do not have permission \"serverquiz.edit\" to use this command.");
                     return false;
                 }
             }

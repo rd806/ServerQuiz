@@ -57,6 +57,16 @@ public class QuizConfig {
         return ServerQuiz.main.storage.getQuizById(id);
     }
 
+    // 添加选择题
+    public boolean addChoiceQuiz(String question, String optionA, String optionB, String optionC, String optionD, String answer, String reward) {
+        return ServerQuiz.main.storage.addChoiceQuiz(question, optionA, optionB, optionC, optionD, answer, reward);
+    }
+
+    // 添加填空题
+    public boolean addBlankQuiz(String question, String answer, String reward) {
+        return ServerQuiz.main.storage.addBlankQuiz(question, answer, reward);
+    }
+
     // 重新加载Quiz
     public void reload() {
         ServerQuiz.main.storage.setQuiz();

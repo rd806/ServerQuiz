@@ -5,6 +5,9 @@ import org.rd806.serverquiz.quiz.content.QuizEntry;
 public interface QuizStorage {
 
     void setQuiz();
-    QuizEntry getQuizById(int num);
     void closeQuiz();
+    QuizEntry getQuizById(int num);
+
+    boolean addChoiceQuiz(String question, String optionA, String optionB, String optionC, String optionD, String answer, String reward);
+    boolean addBlankQuiz(String question, String answer, String reward);
 }

@@ -127,6 +127,56 @@ public class SqlControl implements QuizStorage {
         return null;
     }
 
+
+    @Override
+    public boolean addChoiceQuiz(String question, String optionA, String optionB, String optionC, String optionD, String answer, String reward) {
+        String sql = """
+               INSERT INTO choice(question, option_a, option_b, option_c, option_d, answer, reward) VALUES (?, ?, ?, ?, ?, ?, ?);
+               """;
+
+        try (Connection connection = dataSourceManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, question);
+            statement.setString(2, optionA);
+            statement.setString(3, optionB);
+            statement.setString(4, optionC);
+            statement.setString(5, optionD);
+            statement.setString(6, answer);
+            statement.setString(7, reward);
+
+            int result = statement.executeUpdate();
+            return (result > 0);
+
+
+        } catch (SQLException e) {
+            ServerQuiz.logger.warning("Insert choice quiz failed!" + e.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public boolean addBlankQuiz(String question, String answer, String reward) {
+        String sql = """
+               INSERT INTO blank(question, answer, reward) VALUES (?, ?, ?);
+               """;
+
+        try (Connection connection = dataSourceManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, question);
+            statement.setString(2, answer);
+            statement.setString(3, reward);
+
+            int result = statement.executeUpdate();
+            return (result > 0);
+
+        } catch (SQLException e) {
+            ServerQuiz.logger.warning("Insert blank quiz failed!" + e.getMessage());
+            return false;
+        }
+    }
+
     // 关闭数据库连接
     @Override
     public void closeQuiz() {
