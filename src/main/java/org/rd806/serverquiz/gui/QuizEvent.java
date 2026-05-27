@@ -19,7 +19,7 @@ public class QuizEvent implements Listener {
         if (clicked == null) return;
 
         // 处理点击事件
-        if (inventoryView.getTitle().equalsIgnoreCase("Quiz Menu")) {
+        if (inventoryView.getTitle().equalsIgnoreCase(ServerQuiz.config.getString("gui.title", "Quiz Menu"))) {
             event.setCancelled(true);
             String response;
             switch (clicked.getType()) {

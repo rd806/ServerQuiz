@@ -21,7 +21,7 @@ public class QuizGui {
     private final Inventory quizMenu;
 
     public QuizGui() {
-        quizMenu = Bukkit.createInventory(null, 45, "Quiz Menu");
+        quizMenu = Bukkit.createInventory(null, 45, ServerQuiz.config.getString("gui.title", "Quiz Menu"));
     }
 
     // Quiz界面
@@ -29,12 +29,15 @@ public class QuizGui {
         quizMenu.clear();
         // 左上角
         AddItemToMenu(quizMenu, 0, Material.CRAFTING_TABLE, "ServerQuiz！",
-                "Click the choice block to answer the Quiz",
+                "Click the block to answer the Quiz",
                 "Win the reward if your answer is correct!");
         // 设置题目
-        AddItemToMenu(quizMenu, 4, Material.PAPER, "§rQuestion", "§r§b" + plugin.quiz.getQuestion());
+        AddItemToMenu(quizMenu, 4, Material.PAPER,
+                "§r" + ServerQuiz.config.getString("gui.question", "Question"),
+                "§r§b" + plugin.quiz.getQuestion());
         // 设置奖品
-        AddItemToMenu(quizMenu, 8, plugin.quiz.getReward().getType(), "§rReward");
+        AddItemToMenu(quizMenu, 8, plugin.quiz.getReward().getType(),
+                "§r"+ ServerQuiz.config.getString("gui.reward", "Reward"));
 
         switch (plugin.quiz.getType()) {
             case Choice:
@@ -95,15 +98,23 @@ public class QuizGui {
     // 选择题界面
     private void multipleChoices() {
         // 设置选项
-        AddItemToMenu(quizMenu, 19, Material.RED_WOOL, "§rOption A",  "§r§b" + plugin.quiz.getOptions().get(0));
-        AddItemToMenu(quizMenu, 21, Material.YELLOW_WOOL, "§rOption B", "§r§b" + plugin.quiz.getOptions().get(1));
-        AddItemToMenu(quizMenu, 23, Material.BLUE_WOOL, "§rOption C", "§r§b" + plugin.quiz.getOptions().get(2));
-        AddItemToMenu(quizMenu, 25, Material.GREEN_WOOL, "§rOption D", "§r§b" + plugin.quiz.getOptions().get(3));
+        AddItemToMenu(quizMenu, 19, Material.RED_WOOL,
+                "§r" + ServerQuiz.config.getString("gui.option", "Option") + "A",
+                "§r§b" + plugin.quiz.getOptions().get(0));
+        AddItemToMenu(quizMenu, 21, Material.YELLOW_WOOL,
+                "§r" + ServerQuiz.config.getString("gui.option", "Option") + "B",
+                "§r§b" + plugin.quiz.getOptions().get(1));
+        AddItemToMenu(quizMenu, 23, Material.BLUE_WOOL,
+                "§r" + ServerQuiz.config.getString("gui.option", "Option") + "C",
+                "§r§b" + plugin.quiz.getOptions().get(2));
+        AddItemToMenu(quizMenu, 25, Material.GREEN_WOOL,
+                "§r" + ServerQuiz.config.getString("gui.option", "Option") + "D",
+                "§r§b" + plugin.quiz.getOptions().get(3));
     }
 
     // 填空题界面
     private void fillBlank() {
-        AddItemToMenu(quizMenu, 22, Material.ANVIL, "Answer sheet");
+        AddItemToMenu(quizMenu, 22, Material.ANVIL, ServerQuiz.config.getString("gui.answerSheet", "Answer Sheet"));
     }
 
     public void createGUI(Player player) {
@@ -117,7 +128,7 @@ public class QuizGui {
                     return List.of(AnvilGUI.ResponseAction.close());
                 })
                 .text("Good luck!")
-                .title("Type your answer")
+                .title(ServerQuiz.config.getString("gui.ansewerTitle", "Type your Answer"))
                 .itemLeft(new ItemStack(Material.PAPER))
                 .plugin(plugin)
                 .open(player);

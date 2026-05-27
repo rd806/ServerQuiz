@@ -1,21 +1,41 @@
 config:
+  # Options: YAML, MYSQL
   storage: YAML
+  # The config below is only available for MYSQL
   host: localhost
   port: 3306
   name: root
   password:
+  # The database must be created in advance
   database: serverquiz
   useSSL: false
 
+# The time between each quiz, the unit is seconds
 interval: 900
 
-# 设置回答时发送的信息
-message:
-  # 已有玩家回答正确
-  hasWinner: "已有玩家回答正确！"
-  # 已回答过此问题
-  hasAnswered: "您已经回答过此问题！"
-  # 回答正确
-  correct: "回答正确，奖励已发放！"
-  # 回答错误
-  wrong: "回答错误！"
+# Broadcast messages when a new quiz begin
+broadcast:
+  text: "§e============\n§6§lNew Quiz begins! \n【Click here】 to join§r§e\n============"
+  hover: "§7Click to join Server Quiz!"
+
+# Messages sent when player answer a quiz
+messages:
+  # A player has already given the correct answer
+  hasWinner: "The quiz has already been solved!"
+  # You have answered the quiz
+  hasAnswered: "You have already answered this quiz!"
+  # Your answer is right
+  correct: "You have solved the quiz!"
+  # Your answer is wrong
+  wrong: "Your answer is wrong!"
+
+# The GUI text
+gui:
+  title: "Quiz Menu"
+  question: "Question"
+  reward: "Reward"
+  # Available for choice quiz
+  option: "Option "
+  # Available for blank quiz
+  answerSheet: "Answer sheet"
+  answerTitle: "Type your Answer"
