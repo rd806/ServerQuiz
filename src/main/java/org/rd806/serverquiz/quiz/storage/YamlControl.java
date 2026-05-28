@@ -117,12 +117,27 @@ public class YamlControl implements QuizStorage {
     }
 
     @Override
+    public boolean createScoreBoard(String name, UUID uuid) {
+        return false;
+    }
+
+    @Override
+    public ScoreData getPlayerScore(String name) {
+        return new ScoreData(0, 0);
+    }
+
+    @Override
     public boolean addChoiceQuiz(String question, String optionA, String optionB, String optionC, String optionD, String answer, String reward) {
         return false;
     }
 
     @Override
     public boolean addBlankQuiz(String question, String answer, String reward) {
+        return false;
+    }
+
+    @Override
+    public boolean updateScoreBoard(String name, boolean check) {
         return false;
     }
 

@@ -28,6 +28,8 @@ messages:
   correct: "You have solved the quiz!"
   # Your answer is wrong
   wrong: "Your answer is wrong!"
+  # Update player's score
+  score: "Your score board has been updated!"
 
 # The GUI text
 gui:

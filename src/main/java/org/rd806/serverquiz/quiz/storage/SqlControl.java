@@ -13,6 +13,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class SqlControl implements QuizStorage {
 
@@ -127,6 +128,54 @@ public class SqlControl implements QuizStorage {
         return null;
     }
 
+    @Override
+    public boolean createScoreBoard(String name, UUID uuid) {
+        String sql = """
+              INSERT INTO score (name, uuid, correct_answers, all_answers) VALUES (?, ?, 0, 0) ON DUPLICATE KEY UPDATE id = id;
+              """;
+
+        try (Connection connection = dataSourceManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, name);
+            statement.setString(2, uuid.toString());
+
+            int result = statement.executeUpdate();
+            return (result > 0);
+
+        } catch (SQLException e) {
+            ServerQuiz.logger.warning("Failed to create new score board!" + e.getMessage());
+            return false;
+        }
+    }
+
+    // 获取玩家分数
+    @Override
+    public ScoreData getPlayerScore(String name) {
+        ScoreData score = new ScoreData(0, 0);
+        String sql = """
+                SELECT correct_answers, all_answers FROM score WHERE name = ?;
+                """;
+
+        try (Connection connection = dataSourceManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, name);
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                int correctAnswers = resultSet.getInt("correct_answers");
+                int allAnswers = resultSet.getInt("all_answers");
+                return new ScoreData(correctAnswers, allAnswers);
+            }
+
+            return score;
+        } catch (SQLException e) {
+            ServerQuiz.logger.warning("Failed to get score data!" + e.getMessage());
+            return null;
+        }
+
+    }
 
     @Override
     public boolean addChoiceQuiz(String question, String optionA, String optionB, String optionC, String optionD, String answer, String reward) {
@@ -147,7 +196,6 @@ public class SqlControl implements QuizStorage {
 
             int result = statement.executeUpdate();
             return (result > 0);
-
 
         } catch (SQLException e) {
             ServerQuiz.logger.warning("Insert choice quiz failed!" + e.getMessage());
@@ -173,6 +221,39 @@ public class SqlControl implements QuizStorage {
 
         } catch (SQLException e) {
             ServerQuiz.logger.warning("Insert blank quiz failed!" + e.getMessage());
+            return false;
+        }
+    }
+
+    // 更新计分表
+    @Override
+    public boolean updateScoreBoard(String name, boolean check) {
+        String sql;
+
+        if (check) {
+            sql = """
+                  UPDATE score
+                  SET correct_answers = correct_answers+1, all_answers = all_answers+1
+                  WHERE name = ?;
+                 """;
+        } else {
+            sql = """
+                 UPDATE score
+                 SET all_answers = all_answers+1
+                 WHERE name = ?;
+                """;
+        }
+
+        try (Connection connection = dataSourceManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, name);
+
+            int result = statement.executeUpdate();
+            return (result > 0);
+
+        } catch (SQLException e) {
+            ServerQuiz.logger.warning("Failed to update score board!" + e.getMessage());
             return false;
         }
     }

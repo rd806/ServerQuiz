@@ -37,6 +37,11 @@ public class QuizConfig {
         ServerQuiz.main.storage.setQuiz();
     }
 
+    // 创建计分表
+    public boolean createScoreBoard(String name, UUID uuid) {
+        return ServerQuiz.main.storage.createScoreBoard(name, uuid);
+    }
+
     // 发送随机Quiz
     public void sendRandomQuiz() {
         Random random = new Random();
@@ -112,6 +117,7 @@ public class QuizConfig {
     public void check(Player player, String response) {
         // 获取玩家UUID
         UUID uuid = player.getUniqueId();
+        boolean check;
         // 如果已有玩家回答正确
         if (ServerQuiz.main.quiz.getWinner() != null) {
             player.sendMessage(ServerQuiz.config.getString("messages.hasWinner", "The quiz has already been solved!"));
@@ -126,7 +132,8 @@ public class QuizConfig {
         }
         // 记录回答信息
         ServerQuiz.main.quiz.getAnsweredPlayers().add(uuid);
-        // 回答正确
+
+        // 检查回答信息
         if (response.equals(ServerQuiz.main.quiz.getAnswer())) {
             // 赠送物品
             player.getInventory().addItem(ServerQuiz.main.quiz.getReward());
@@ -134,11 +141,17 @@ public class QuizConfig {
             player.closeInventory();
             ServerQuiz.main.quiz.setWinner(uuid);
             player.sendMessage(ServerQuiz.config.getString("messages.correct", "You have solved the quiz!"));
-            return;
+            check = true;
+        } else {
+            player.sendMessage(ServerQuiz.config.getString("messages.wrong", "Your answer is wrong!"));
+            check = false;
         }
 
+        // 更新计分表
+        if (ServerQuiz.main.storage.updateScoreBoard(player.getName(), check)) {
+            player.sendMessage(ServerQuiz.config.getString("messages.score", "Your score board has been updated!"));
+        }
         player.closeInventory();
-        player.sendMessage(ServerQuiz.config.getString("messages.wrong", "Your answer is wrong!"));
     }
 
     // 获取特定的Quiz信息

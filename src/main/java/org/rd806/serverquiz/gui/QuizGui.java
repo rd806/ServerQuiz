@@ -9,6 +9,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.rd806.serverquiz.ServerQuiz;
+import org.rd806.serverquiz.quiz.storage.QuizStorage;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -80,6 +81,14 @@ public class QuizGui {
         ItemStack head = new ItemStack(Material.PLAYER_HEAD);
         SkullMeta skullMeta = (SkullMeta) head.getItemMeta();
 
+        // 获取玩家回答信息
+        new QuizStorage.ScoreData(0, 0);
+        QuizStorage.ScoreData scoreData;
+        scoreData = ServerQuiz.main.storage.getPlayerScore(player.getName());
+        int correctAnswers = scoreData.correctAnswers();
+        int allAnswers = scoreData.allAnswers();
+        double accuracy = allAnswers == 0 ? 0 : (double) correctAnswers / allAnswers * 100;
+
         if (skullMeta != null) {
             skullMeta.setOwningPlayer(player);
             skullMeta.setDisplayName(player.getName());
@@ -87,8 +96,9 @@ public class QuizGui {
                     "§7Click to show your player info",
                     "",
                     "§ePlayer: §f" + player.getName(),
-                    "§eLevel: §f" + player.getLevel(),
-                    "§eHealth: §f" + String.format("%.1f", player.getHealth()) + "❤"
+                    "§eCorrect: §f" + correctAnswers,
+                    "§eTotal: §f" + allAnswers,
+                    "§eAccuracy: §f" + String.format("%.1f", accuracy) + "%"
             ));
             head.setItemMeta(skullMeta);
         }

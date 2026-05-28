@@ -43,7 +43,7 @@ public class DatabaseInitial {
             String createScoreTable = """
                     CREATE TABLE IF NOT EXISTS score (
                         id INT PRIMARY KEY AUTO_INCREMENT,
-                        name VARCHAR(255),
+                        name VARCHAR(255) UNIQUE,
                         uuid TEXT,
                         correct_answers INTEGER,
                         all_answers INTEGER

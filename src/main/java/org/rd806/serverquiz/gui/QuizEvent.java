@@ -4,6 +4,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.rd806.serverquiz.ServerQuiz;
@@ -46,6 +47,15 @@ public class QuizEvent implements Listener {
                     break;
             }
         }
+    }
 
+    // 创建计分表
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        Player player = event.getPlayer();
+        if (ServerQuiz.main.quizConfig.createScoreBoard(player.getName(), player.getUniqueId())) {
+            return;
+        }
+        ServerQuiz.logger.warning("Failed to create scoreboard for " + player.getName());
     }
 }
