@@ -4,6 +4,7 @@ import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
+import org.rd806.serverquiz.ScoreData;
 import org.rd806.serverquiz.ServerQuiz;
 import org.rd806.serverquiz.quiz.content.QuizEntry;
 import org.rd806.serverquiz.quiz.content.QuizType;

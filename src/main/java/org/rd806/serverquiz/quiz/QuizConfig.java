@@ -9,6 +9,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+import org.rd806.serverquiz.ScoreData;
 import org.rd806.serverquiz.ServerQuiz;
 import org.rd806.serverquiz.database.DatabaseConfig;
 import org.rd806.serverquiz.quiz.content.QuizEntry;
@@ -171,6 +172,11 @@ public class QuizConfig {
         }
         sender.sendMessage("Reward: " + quiz.getReward().toString());
         sender.sendMessage("-----------------------");
+    }
+
+    // 获取玩家回答信息
+    public ScoreData getScoreData(String name) {
+        return ServerQuiz.main.storage.getPlayerScore(name);
     }
 
     public String getStorageType() { return this.storageType; }

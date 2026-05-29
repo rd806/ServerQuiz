@@ -9,7 +9,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.rd806.serverquiz.ServerQuiz;
-import org.rd806.serverquiz.quiz.storage.QuizStorage;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,17 +28,19 @@ public class QuizGui {
     public Inventory createQuizMenu(Player player) {
         quizMenu.clear();
         // 左上角
-        AddItemToMenu(quizMenu, 0, Material.CRAFTING_TABLE, "ServerQuiz！",
-                "Click the block to answer the Quiz",
-                "Win the reward if your answer is correct!");
+        AddItemToMenu(quizMenu, 0, Material.CRAFTING_TABLE,
+                "§r"+ "ServerQuiz",
+                "Click the block to answer the Quiz", "Win the reward if your answer is correct!");
         // 设置题目
         AddItemToMenu(quizMenu, 4, Material.PAPER,
                 "§r" + ServerQuiz.config.getString("gui.question", "Question"),
                 "§r§b" + plugin.quiz.getQuestion());
         // 设置奖品
         AddItemToMenu(quizMenu, 8, plugin.quiz.getReward().getType(),
-                "§r"+ ServerQuiz.config.getString("gui.reward", "Reward"));
+                "§r" + ServerQuiz.config.getString("gui.reward", "Reward"),
+                "§r§b" + plugin.quiz.getReward().getType());
 
+        // 设置回答区域
         switch (plugin.quiz.getType()) {
             case Choice:
                 multipleChoices();
@@ -52,7 +53,8 @@ public class QuizGui {
         // 玩家信息（左下角）
         quizMenu.setItem(36, createPlayerHead(player));
         // 插件信息（右下角）
-        AddItemToMenu(quizMenu, 44, Material.REDSTONE_BLOCK, "About the plugin", "Click to view the source code!");
+        AddItemToMenu(quizMenu, 44, Material.REDSTONE_BLOCK,
+                "§r" + "About the plugin", "Click to view the source code!");
 
         return quizMenu;
     }
@@ -81,25 +83,15 @@ public class QuizGui {
         ItemStack head = new ItemStack(Material.PLAYER_HEAD);
         SkullMeta skullMeta = (SkullMeta) head.getItemMeta();
 
-        // 获取玩家回答信息
-        new QuizStorage.ScoreData(0, 0);
-        QuizStorage.ScoreData scoreData;
-        scoreData = ServerQuiz.main.storage.getPlayerScore(player.getName());
-        int correctAnswers = scoreData.correctAnswers();
-        int allAnswers = scoreData.allAnswers();
-        double accuracy = allAnswers == 0 ? 0 : (double) correctAnswers / allAnswers * 100;
+        // 获取计分表信息
+        String title = ServerQuiz.config.getString("gui.scoreBoard.title", "Your quiz score board");
+        List<String> lines = ServerQuiz.config.getStringList("gui.scoreBoard.lore");
+        List<String> statistic = ServerQuiz.main.placeholder.resolve(lines, player);
 
         if (skullMeta != null) {
             skullMeta.setOwningPlayer(player);
-            skullMeta.setDisplayName(player.getName());
-            skullMeta.setLore(Arrays.asList(
-                    "§7Click to show your player info",
-                    "",
-                    "§ePlayer: §f" + player.getName(),
-                    "§eCorrect: §f" + correctAnswers,
-                    "§eTotal: §f" + allAnswers,
-                    "§eAccuracy: §f" + String.format("%.1f", accuracy) + "%"
-            ));
+            skullMeta.setDisplayName(title);
+            skullMeta.setLore(statistic);
             head.setItemMeta(skullMeta);
         }
         return head;
@@ -124,7 +116,8 @@ public class QuizGui {
 
     // 填空题界面
     private void fillBlank() {
-        AddItemToMenu(quizMenu, 22, Material.ANVIL, ServerQuiz.config.getString("gui.answerSheet", "Answer Sheet"));
+        AddItemToMenu(quizMenu, 22, Material.ANVIL,
+                ServerQuiz.config.getString("gui.answerSheet", "§r" + "Answer Sheet"));
     }
 
     public void createGUI(Player player) {

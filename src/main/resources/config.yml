@@ -15,6 +15,7 @@ interval: 900
 
 # Broadcast messages when a new quiz begin
 broadcast:
+  # The text must be written in a single line
   text: "§e============\n§6§lNew Quiz begins! \n【Click here】 to join§r§e\n============"
   hover: "§7Click to join Server Quiz!"
 
@@ -41,3 +42,17 @@ gui:
   # Available for blank quiz
   answerSheet: "Answer sheet"
   answerTitle: "Type your Answer"
+  # Scoreboard settings
+  scoreBoard:
+    title: "§rYour quiz score board"
+    # ServerQuiz has some built-in variables, which can be used here:
+    # - %serverquiz_name% : the player's name
+    # - %serverquiz_correct% : the number of questions correctly answered by the player
+    # - %serverquiz_total% : the total number of questions answered by the player
+    # - %serverquiz_accuracy% : the accuracy of the player answering questions
+    lore:
+      - ""
+      - "§ePlayer: §f %serverquiz_name%"
+      - "§eCorrect: §f %serverquiz_correct%"
+      - "§eTotal: §f %serverquiz_total%"
+      - "§eAccuracy: §f %serverquiz_accuracy%"

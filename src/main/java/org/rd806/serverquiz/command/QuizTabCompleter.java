@@ -24,7 +24,7 @@ public class QuizTabCompleter implements TabCompleter {
                         AddCompletions(completions, "<question ID>");
                         return completions;
                     case "show":
-                        AddCompletions(completions, "num", "interval", "storage", "info");
+                        AddCompletions(completions, "num", "interval", "storage", "info", "score");
                         return completions;
                     case "edit":
                         AddCompletions(completions, "interval", "storage", "choice", "blank");
@@ -32,6 +32,10 @@ public class QuizTabCompleter implements TabCompleter {
                 }
             }  else if (args.length == 3) {
                 switch (args[1]) {
+                    case "info":
+                        AddCompletions(completions, "<quiz ID>");
+                    case "score":
+                        AddCompletions(completions, "<target Player>");
                     case "choice", "blank":
                         AddCompletions(completions, "insert", "alter", "delete");
                         return completions;

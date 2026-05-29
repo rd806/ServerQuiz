@@ -6,6 +6,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.rd806.serverquiz.ScoreData;
 import org.rd806.serverquiz.ServerQuiz;
 import org.rd806.serverquiz.quiz.content.QuizEntry;
 
@@ -121,6 +122,25 @@ public class QuizCommand implements CommandExecutor {
                     }
                     QuizEntry temp = ServerQuiz.main.quizConfig.getQuizById(num);
                     ServerQuiz.main.quizConfig.getQuizInfo(sender, temp);
+                    return true;
+                }
+                // 获取玩家回答信息
+                case "score" -> {
+                    String target;
+                    if (!(sender instanceof  Player)) {
+                        ServerQuiz.logger.info("You must be a player to use this command.");
+                        return false;
+                    }
+
+                    // 默认发送自己的分数
+                    if (args.length == 2) {
+                        target = sender.getName();
+                    } else {
+                        target = args[2];
+                    }
+                    ScoreData scoreData = ServerQuiz.main.quizConfig.getScoreData(target);
+                    sender.sendMessage(target + "'s correct answers is " + scoreData.correctAnswers());
+                    sender.sendMessage(target + "'s total answers is " + scoreData.totalAnswers());
                     return true;
                 }
                 default -> {

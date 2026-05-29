@@ -17,6 +17,9 @@ import java.util.logging.Logger;
 public final class ServerQuiz extends JavaPlugin {
     // 主类
     public static ServerQuiz main;
+    // 配置变量
+    public Placeholder placeholder;
+
     public QuizEntry quiz;
     public QuizConfig quizConfig;
     public QuizGui quizGui;
@@ -25,13 +28,14 @@ public final class ServerQuiz extends JavaPlugin {
 
     // 日志文件
     public static Logger logger;
-    // 获取配置文件
+    // 配置文件
     public static FileConfiguration config;
 
     public ServerQuiz() {
         main = this;
         logger = main.getLogger();
         config = main.getConfig();
+        this.placeholder = new Placeholder();
         this.quiz = new QuizEntry();
         this.quizConfig = new QuizConfig();
         this.quizGui = new QuizGui();
