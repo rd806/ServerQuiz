@@ -1,6 +1,7 @@
 package org.rd806.serverquiz;
 
 import org.bukkit.entity.Player;
+import org.rd806.serverquiz.quiz.content.ScoreData;
 
 import java.util.ArrayList;
 import java.util.HashMap;

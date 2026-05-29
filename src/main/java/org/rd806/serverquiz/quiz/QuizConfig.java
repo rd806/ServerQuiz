@@ -9,7 +9,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
-import org.rd806.serverquiz.ScoreData;
+import org.rd806.serverquiz.quiz.content.ScoreData;
 import org.rd806.serverquiz.ServerQuiz;
 import org.rd806.serverquiz.database.DatabaseConfig;
 import org.rd806.serverquiz.quiz.content.QuizEntry;

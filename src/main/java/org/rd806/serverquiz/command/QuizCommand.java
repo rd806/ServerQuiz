@@ -6,7 +6,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.rd806.serverquiz.ScoreData;
+import org.rd806.serverquiz.quiz.content.ScoreData;
 import org.rd806.serverquiz.ServerQuiz;
 import org.rd806.serverquiz.quiz.content.QuizEntry;
 

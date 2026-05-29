@@ -1,6 +1,6 @@
 package org.rd806.serverquiz.quiz.storage;
 
-import org.rd806.serverquiz.ScoreData;
+import org.rd806.serverquiz.quiz.content.ScoreData;
 import org.rd806.serverquiz.quiz.content.QuizEntry;
 
 import java.util.UUID;

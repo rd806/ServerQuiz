@@ -4,42 +4,145 @@ import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
-import org.rd806.serverquiz.ScoreData;
+import org.rd806.serverquiz.quiz.content.ScoreData;
 import org.rd806.serverquiz.ServerQuiz;
 import org.rd806.serverquiz.quiz.content.QuizEntry;
 import org.rd806.serverquiz.quiz.content.QuizType;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 public class YamlControl implements QuizStorage {
 
+    private File quizFile;
+    private File scoreFile;
+    private YamlConfiguration quiz;
+    private FileConfiguration score;
+
     private List<Map<?, ?>> choiceQuizMap;
     private List<Map<?, ?>> blankQuizMap;
+    private List<Map<?, ?>> scoreRawMap;
 
+    private final List<QuizEntry> choiceQuizList;
+    private final List<QuizEntry> blankQuizList;
     private final List<QuizEntry> quizList;
+
+    private final Map<String, ScoreData> scoreMap;
 
     public YamlControl() {
         this.choiceQuizMap = new ArrayList<>();
         this.blankQuizMap = new ArrayList<>();
+        this.scoreRawMap = new ArrayList<>();
+
+        this.choiceQuizList = new ArrayList<>();
+        this.blankQuizList = new ArrayList<>();
         this.quizList = new ArrayList<>();
+        this.scoreMap = new HashMap<>();
+    }
+
+    // 保存文件更改
+    private void saveQuizFile() {
+        try {
+            updateChoiceQuizMap();
+            updateBlankQuizMap();
+            quiz.set("Choice", choiceQuizMap);
+            quiz.set("Blank", blankQuizMap);
+            quiz.save(quizFile);
+        } catch (IOException e) {
+            ServerQuiz.logger.warning("Could not save quiz file");
+        }
+    }
+
+    private void saveScoreFile() {
+        try {
+            updateScoreRawMap();
+            score.set("Score", scoreRawMap);
+            score.save(scoreFile);
+        } catch (IOException e) {
+            ServerQuiz.logger.warning("Could not save score file");
+        }
+    }
+
+    // 更新选择题Map数据
+    private void updateChoiceQuizMap() {
+        choiceQuizMap.clear();
+        for (QuizEntry quizEntry : choiceQuizList) {
+            Map<String, Object> quizData = new LinkedHashMap<>();
+            quizData.put("Question", quizEntry.getQuestion());
+            quizData.put("Answer", quizEntry.getAnswer());
+
+            // 设置选项
+            Map<String, String> options = new LinkedHashMap<>();
+            List<String> optionList = quizEntry.getOptions();
+            if (optionList != null && optionList.size() >= 4) {
+                options.put("A", optionList.get(0));
+                options.put("B", optionList.get(1));
+                options.put("C", optionList.get(2));
+                options.put("D", optionList.get(3));
+                quizData.put("Options", options);
+            }
+
+            // 设置奖励
+            ItemStack reward = quizEntry.getReward();
+            if (reward != null && reward.getType() != Material.AIR) {
+                quizData.put("Reward", reward.getType().name());
+            }
+
+            choiceQuizMap.add(quizData);
+        }
+    }
+
+    // 更新填空题Map数据
+    private void updateBlankQuizMap() {
+        blankQuizMap.clear();
+        for (QuizEntry quizEntry : blankQuizList) {
+            Map<String, Object> quizData = new LinkedHashMap<>();
+            quizData.put("Question", quizEntry.getQuestion());
+            quizData.put("Answer", quizEntry.getAnswer());
+
+            // 设置奖励
+            ItemStack reward = quizEntry.getReward();
+            if (reward != null) {
+                quizData.put("Reward", reward.getType().name());
+            }
+
+            blankQuizMap.add(quizData);
+        }
+    }
+
+    // 更新分数Map数据
+    private void updateScoreRawMap() {
+        scoreRawMap.clear();
+        for (Map.Entry<String, ScoreData> entry : scoreMap.entrySet()) {
+            Map<String, Object> scoreData = new LinkedHashMap<>();
+            scoreData.put("Name", entry.getKey());
+            scoreData.put("CorrectAnswers", entry.getValue().correctAnswers());
+            scoreData.put("TotalAnswers", entry.getValue().totalAnswers());
+            scoreRawMap.add(scoreData);
+        }
     }
 
     @Override
     public void setQuiz() {
         // 创建配置文件
-        File quizFile = new File(ServerQuiz.main.getDataFolder(), "Quiz.yml");
+        quizFile = new File(ServerQuiz.main.getDataFolder(), "Quiz.yml");
+        scoreFile = new File(ServerQuiz.main.getDataFolder(), "Score.yml");
         if (!quizFile.exists()) {
             ServerQuiz.main.saveResource("Quiz.yml", false);
+            ServerQuiz.main.saveResource("Score.yml", false);
         }
-        FileConfiguration configuration = YamlConfiguration.loadConfiguration(quizFile);
+        quiz = YamlConfiguration.loadConfiguration(quizFile);
+        score = YamlConfiguration.loadConfiguration(scoreFile);
         // 清除quizList
         quizList.clear();
+        scoreMap.clear();
         int i = 1;
 
         // 初始化
-        choiceQuizMap = configuration.getMapList("Choice");
-        blankQuizMap = configuration.getMapList("Blank");
+        choiceQuizMap = quiz.getMapList("Choice");
+        blankQuizMap = quiz.getMapList("Blank");
+        scoreRawMap = score.getMapList("Score");
 
         // 设置选择题
         if (choiceQuizMap.isEmpty()) {
@@ -72,7 +175,7 @@ public class YamlControl implements QuizStorage {
                 tempQuiz.setReward(rewardItem);
             }
             // 将Quiz加入集合中
-            quizList.add(tempQuiz);
+            choiceQuizList.add(tempQuiz);
             i++;
         }
 
@@ -97,14 +200,27 @@ public class YamlControl implements QuizStorage {
                 tempQuiz.setReward(rewardItem);
             }
             // 将Quiz加入集合中
-            quizList.add(tempQuiz);
+            blankQuizList.add(tempQuiz);
             i++;
         }
+
+        quizList.addAll(choiceQuizList);
+        quizList.addAll(blankQuizList);
 
         int num = quizList.size();
         ServerQuiz.main.quizConfig.setMaxNum(num);
         ServerQuiz.logger.info("Quiz list initialized!");
         ServerQuiz.logger.info("Quiz number: " + num);
+
+        // 获取玩家分数
+        for (Map<?, ?> tempMap : scoreRawMap) {
+            String name = (String) tempMap.get("Name");
+            int correctAnswers = (int) tempMap.get("CorrectAnswers");
+            int totalAnswers = (int) tempMap.get("TotalAnswers");
+            ScoreData scoreData = new ScoreData(correctAnswers, totalAnswers);
+
+            scoreMap.put(name, scoreData);
+        }
     }
 
     // 获取特定的Quiz
@@ -119,34 +235,92 @@ public class YamlControl implements QuizStorage {
 
     @Override
     public boolean createScoreBoard(String name, UUID uuid) {
-        return false;
+        // 存在则不创建
+        if (getPlayerScore(name) != null) return true;
+        scoreMap.put(name, new ScoreData(0, 0));
+        saveScoreFile();
+        return true;
     }
 
+    // 获取玩家分数
     @Override
     public ScoreData getPlayerScore(String name) {
-        return new ScoreData(0, 0);
+        return scoreMap.get(name);
     }
 
     @Override
     public boolean addChoiceQuiz(String question, String optionA, String optionB, String optionC, String optionD, String answer, String reward) {
-        return false;
+        QuizEntry tempQuiz = new QuizEntry();
+        tempQuiz.setType(QuizType.Choice);
+        tempQuiz.setQuestion(question);
+        tempQuiz.setAnswer(answer);
+
+        List<String> optionList = new ArrayList<>();
+        optionList.add(optionA);
+        optionList.add(optionB);
+        optionList.add(optionC);
+        optionList.add(optionD);
+        tempQuiz.setOptions(optionList);
+
+        Material rewardMaterial = Material.matchMaterial(reward);
+        if (rewardMaterial != null) {
+            ItemStack rewardItem = new ItemStack(rewardMaterial);
+            tempQuiz.setReward(rewardItem);
+        } else {
+            tempQuiz.setReward(new ItemStack(Material.AIR));
+        }
+
+        choiceQuizList.add(tempQuiz);
+        saveQuizFile();
+        return true;
     }
 
     @Override
     public boolean addBlankQuiz(String question, String answer, String reward) {
-        return false;
+        QuizEntry tempQuiz = new QuizEntry();
+        tempQuiz.setType(QuizType.Blank);
+        tempQuiz.setQuestion(question);
+        tempQuiz.setAnswer(answer);
+
+        Material rewardMaterial = Material.matchMaterial(reward);
+        if (rewardMaterial != null) {
+            ItemStack rewardItem = new ItemStack(rewardMaterial);
+            tempQuiz.setReward(rewardItem);
+        } else {
+            tempQuiz.setReward(new ItemStack(Material.AIR));
+        }
+
+        blankQuizList.add(tempQuiz);
+        saveQuizFile();
+        return true;
     }
 
     @Override
     public boolean updateScoreBoard(String name, boolean check) {
-        return false;
+        ScoreData oldData = scoreMap.get(name);
+        ScoreData newData;
+
+        if (check) {
+            newData = new ScoreData(oldData.correctAnswers() + 1, oldData.totalAnswers() + 1);
+        } else {
+            newData = new ScoreData(oldData.correctAnswers(), oldData.totalAnswers() + 1);
+        }
+        scoreMap.put(name, newData);
+        saveScoreFile();
+        return true;
     }
 
     // 清空Quiz
     @Override
     public void closeQuiz() {
+        saveQuizFile();
+        saveScoreFile();
         quizList.clear();
+        choiceQuizList.clear();
+        blankQuizList.clear();
+        scoreMap.clear();
         choiceQuizMap.clear();
         blankQuizMap.clear();
+        scoreRawMap.clear();
     }
 }
