@@ -27,7 +27,7 @@ public class QuizConfig {
 
     public QuizConfig() {
         this.storageType = ServerQuiz.config.getString("config.storage", "YAML");
-        this.interval = ServerQuiz.config.getInt("interval", 900);
+        this.interval = ServerQuiz.config.getInt("broadcast.interval", 900);
         this.maxNum = 0;
     }
 

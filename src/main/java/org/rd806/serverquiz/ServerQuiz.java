@@ -54,6 +54,9 @@ public final class ServerQuiz extends JavaPlugin {
         logger.info("╚═════╝░╚══════╝╚═╝░░╚═╝░░░╚═╝░░░╚══════╝╚═╝░░╚═╝░░░╚═╝░░░░╚═════╝░╚═╝╚══════╝");
         logger.info(" ");
 
+        // 检查更新
+        UpdateChecker.checkUpdate();
+
         // 注册命令
         Objects.requireNonNull(Bukkit.getPluginCommand("serverquiz")).setExecutor(new QuizCommand());
         Objects.requireNonNull(Bukkit.getPluginCommand("serverquiz")).setTabCompleter(new QuizTabCompleter());

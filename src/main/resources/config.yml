@@ -10,14 +10,22 @@ config:
   database: serverquiz
   useSSL: false
 
-# The time between each quiz, the unit is seconds
-interval: 900
+
+# Check for the plugin's update info
+updateChecker:
+  # Option: modrinth/github
+  source: modrinth
+  enable: true
+
 
 # Broadcast messages when a new quiz begin
 broadcast:
   # The text must be written in a single line
   text: "§e============\n§6§lNew Quiz begins! \n【Click here】 to join§r§e\n============"
   hover: "§7Click to join Server Quiz!"
+  # The time between each quiz, the unit is seconds
+  interval: 900
+
 
 # Messages sent when player answer a quiz
 messages:
@@ -31,6 +39,7 @@ messages:
   wrong: "Your answer is wrong!"
   # Update player's score
   score: "Your score board has been updated!"
+
 
 # The GUI text
 gui:
