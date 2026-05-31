@@ -38,7 +38,7 @@ public class UpdateChecker {
             }
 
             if (!latestVersion.equals(currentVersion)) {
-                ServerQuiz.logger.info("\u001B[33m*** Newer version available! ***\u001B[0m");
+                ServerQuiz.logger.info("\u001B[33m*** Newer ServerQuiz version available! ***\u001B[0m");
                 ServerQuiz.logger.info("\u001B[33m*** Latest version: " + latestVersion + " ***\u001B[0m");
                 ServerQuiz.logger.info("\u001B[33m*** Current version: " + currentVersion + " ***\u001B[0m");
             } else {

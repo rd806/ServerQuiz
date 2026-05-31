@@ -137,9 +137,17 @@ public class QuizConfig {
         // 检查回答信息
         if (response.equals(ServerQuiz.main.quiz.getAnswer())) {
             // 赠送物品
-            player.getInventory().addItem(ServerQuiz.main.quiz.getReward());
+            switch (ServerQuiz.main.quiz.getReward().rewardType()) {
+                case Item -> {
+                    player.getInventory().addItem(ServerQuiz.main.quiz.getReward().item());
+                    player.closeInventory();
+                } case Vault -> {
+                    int amount = ServerQuiz.main.quiz.getReward().value();
+                    ServerQuiz.main.vault.addPlayerEconomy(player, amount);
+                }
+            }
+
             player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
-            player.closeInventory();
             ServerQuiz.main.quiz.setWinner(uuid);
             player.sendMessage(ServerQuiz.config.getString("messages.correct", "You have solved the quiz!"));
             check = true;

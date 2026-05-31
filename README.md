@@ -28,6 +28,14 @@ Choice:
       D: "127.256.3.34"
     Answer: D
     Reward: DIAMOND
+  - Question: "Which of the following file formats are not considered compressed files"
+    Options:
+      A: "zip"
+      B: "rar"
+      C: "7z"
+      D: "png"
+    Answer: D
+    Reward: DIAMOND
 
 Blank:
   - Question: "1+1=?"
@@ -50,14 +58,21 @@ config:
 Other config options is shown below:
 
 ```yml
-# The time between each quiz, the unit is seconds
-interval: 900
+# Check for the plugin's update info
+updateChecker:
+  # Option: modrinth/github
+  source: modrinth
+  enable: true
+
 
 # Broadcast messages when a new quiz begin
 broadcast:
   # The text must be written in a single line
   text: "§e============\n§6§lNew Quiz begins! \n【Click here】 to join§r§e\n============"
   hover: "§7Click to join Server Quiz!"
+  # The time between each quiz, the unit is seconds
+  interval: 900
+
 
 # Messages sent when player answer a quiz
 messages:
@@ -71,6 +86,7 @@ messages:
   wrong: "Your answer is wrong!"
   # Update player's score
   score: "Your score board has been updated!"
+
 
 # The GUI text
 gui:

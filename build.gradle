@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'org.rd806'
-version = '1.1.1'
+version = '1.1.2'
 
 repositories {
     mavenCentral()
@@ -15,17 +15,26 @@ repositories {
         url = "https://hub.spigotmc.org/nexus/content/repositories/snapshots/"
     }
     maven {
+        name = "jitpack.io"
+        url = "https://jitpack.io/"
+    }
+    maven {
         url = "https://mvn.wesjd.net/"
     }
 }
 
 dependencies {
     compileOnly("org.spigotmc:spigot-api:1.20.1-R0.1-SNAPSHOT")
+    // Vault 经济接口
+    compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
+    // bstats 统计
+    implementation("org.bstats:bstats-bukkit:3.2.1")
     // MySQL 数据库
-    implementation 'mysql:mysql-connector-java:8.0.33'
+    implementation("mysql:mysql-connector-java:8.0.33")
     // HikariCP 高性能数据库连接池
-    implementation 'com.zaxxer:HikariCP:5.0.1'
-    implementation 'net.wesjd:anvilgui:1.10.13-SNAPSHOT'
+    implementation("com.zaxxer:HikariCP:5.0.1")
+    // AnvilGUI 可视化输入界面
+    implementation("net.wesjd:anvilgui:1.10.13-SNAPSHOT")
 }
 
 tasks {
@@ -39,10 +48,11 @@ tasks {
 
 shadowJar {
     // 重命名依赖包，避免冲突
-    relocate 'com.zaxxer.hikari', 'org.rd806.libs.hikari'
-    relocate 'com.mysql', 'org.rd806.libs.mysql'
-    relocate 'com.google', 'org.rd806.libs.google'
-    relocate 'net.wesjd.anvilgui', 'org.rd806.libs.anvilgui'
+    relocate("com.zaxxer.hikari", project.group.toString() + ".libs.hikari")
+    relocate("com.mysql", project.group.toString() + ".libs.mysql")
+    relocate("com.google", project.group.toString() + ".libs.google")
+    relocate("net.wesjd.anvilgui", project.group.toString() + ".libs.anvilgui")
+    relocate("org.bstats", project.group.toString() + ".libs.bstats")
     // 命名输出文件
     archiveFileName = "${project.name}-${project.version}.jar"
 }

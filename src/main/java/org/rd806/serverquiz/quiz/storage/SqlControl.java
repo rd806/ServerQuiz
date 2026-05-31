@@ -2,6 +2,7 @@ package org.rd806.serverquiz.quiz.storage;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
+import org.rd806.serverquiz.quiz.content.RewardData;
 import org.rd806.serverquiz.quiz.content.ScoreData;
 import org.rd806.serverquiz.ServerQuiz;
 import org.rd806.serverquiz.database.DataSourceManager;
@@ -101,10 +102,16 @@ public class SqlControl implements QuizStorage {
 
                 // 设置奖励
                 String rewardName = resultSet.getString("reward");
-                Material rewardMaterial = Material.matchMaterial(rewardName.toUpperCase());
-                if (rewardMaterial != null) {
-                    ItemStack rewardItem = new ItemStack(rewardMaterial);
-                    temp.setReward(rewardItem);
+                if (RewardData.numberCheck(rewardName)) {
+                    // 设置为经济Vault格式
+                    temp.setReward(new RewardData(rewardName, RewardData.RewardType.Vault,  null, Integer.parseInt(rewardName)));
+                } else {
+                    // 设置为实物格式
+                    Material rewardMaterial = Material.matchMaterial(rewardName.toUpperCase());
+                    if (rewardMaterial != null) {
+                        ItemStack rewardItem = new ItemStack(rewardMaterial);
+                        temp.setReward(new RewardData(rewardName, RewardData.RewardType.Item,  rewardItem, 0));
+                    }
                 }
 
                 String type = resultSet.getString("type");

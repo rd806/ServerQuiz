@@ -9,6 +9,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.rd806.serverquiz.ServerQuiz;
+import org.rd806.serverquiz.quiz.content.RewardData;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,9 +37,17 @@ public class QuizGui {
                 "§r" + ServerQuiz.config.getString("gui.question", "Question"),
                 "§r§b" + plugin.quiz.getQuestion());
         // 设置奖品
-        AddItemToMenu(quizMenu, 8, plugin.quiz.getReward().getType(),
-                "§r" + ServerQuiz.config.getString("gui.reward", "Reward"),
-                "§r§b" + plugin.quiz.getReward().getType());
+        // 检查是否为数字
+        if (plugin.quiz.getReward().rewardType() == RewardData.RewardType.Item) {
+            AddItemToMenu(quizMenu, 8, plugin.quiz.getReward().item().getType(),
+                    "§r" + ServerQuiz.config.getString("gui.reward", "Reward"),
+                    "§r§b" + plugin.quiz.getReward().item().getType());
+        } else {
+            AddItemToMenu(quizMenu, 8, Material.EMERALD,
+                    "§r" + ServerQuiz.config.getString("gui.reward", "Reward"),
+                    "§r§b" + plugin.quiz.getReward().value());
+        }
+
 
         // 设置回答区域
         switch (plugin.quiz.getType()) {

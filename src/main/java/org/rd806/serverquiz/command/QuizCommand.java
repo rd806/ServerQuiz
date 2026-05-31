@@ -131,7 +131,6 @@ public class QuizCommand implements CommandExecutor {
                         ServerQuiz.logger.info("You must be a player to use this command.");
                         return false;
                     }
-
                     // 默认发送自己的分数
                     if (args.length == 2) {
                         target = sender.getName();
@@ -212,7 +211,9 @@ public class QuizCommand implements CommandExecutor {
                             return false;
                         }
                     }
-                    case "delete" -> {}
+                    case "delete" -> {
+                        return true;
+                    }
                 }
             }
 
@@ -234,6 +235,8 @@ public class QuizCommand implements CommandExecutor {
             return true;
         }
 
+        String version = ServerQuiz.main.getDescription().getVersion();
+        sender.sendMessage("ServerQuiz version: " + version);
         return false;
     }
 }

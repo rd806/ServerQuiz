@@ -1,5 +1,6 @@
 package org.rd806.serverquiz;
 
+import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -19,6 +20,7 @@ public final class ServerQuiz extends JavaPlugin {
     public static ServerQuiz main;
     // 配置变量
     public Placeholder placeholder;
+    public Vault vault;
 
     public QuizEntry quiz;
     public QuizConfig quizConfig;
@@ -44,6 +46,11 @@ public final class ServerQuiz extends JavaPlugin {
     @Override
     public void onEnable() {
         // Plugin startup logic
+        // 初始化 bstats 服务
+        new Metrics(this, 31703);
+        // 加载 Vault 库
+        vault = new Vault();
+
         logger.info("ServerQuiz has been enabled!");
         logger.info(" ");
         logger.info("░██████╗███████╗██████╗░██╗░░░██╗███████╗██████╗░░██████╗░██╗░░░██╗██╗███████╗");

@@ -14,7 +14,7 @@ public class DatabaseConfig {
     public DatabaseConfig() {
         this.host = "localhost";
         this.port = 3306;
-        this.database = "QuizPlugin";
+        this.database = "ServerQuiz";
         this.username = "root";
         this.password = "";
         this.useSSL = false;
