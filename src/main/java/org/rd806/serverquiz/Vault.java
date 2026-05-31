@@ -32,6 +32,6 @@ public class Vault {
             return;
         }
         economy.depositPlayer(player, amount);
-        player.sendMessage(amount + " has been added to your Account!");
+        player.sendMessage(ServerQuiz.config.getString("messages.sendReward", "Reward has been sent to you: ") + amount);
     }
 }

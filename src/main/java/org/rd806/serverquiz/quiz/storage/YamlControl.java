@@ -1,9 +1,7 @@
 package org.rd806.serverquiz.quiz.storage;
 
-import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.inventory.ItemStack;
 import org.rd806.serverquiz.quiz.content.RewardData;
 import org.rd806.serverquiz.quiz.content.ScoreData;
 import org.rd806.serverquiz.ServerQuiz;
@@ -167,17 +165,7 @@ public class YamlControl implements QuizStorage {
             // 设置奖品
             Object rewardObj = tempMap.get("Reward");
             String rewardName = rewardObj.toString();
-            if (RewardData.numberCheck(rewardName)) {
-                // 设置为经济Vault格式
-                tempQuiz.setReward(new RewardData(rewardName, RewardData.RewardType.Vault, null, Integer.parseInt(rewardName)));
-            } else {
-                // 设置为实物格式
-                Material rewardMaterial = Material.matchMaterial(rewardName.toUpperCase());
-                if (rewardMaterial != null) {
-                    ItemStack rewardItem = new ItemStack(rewardMaterial);
-                    tempQuiz.setReward(new RewardData(rewardName, RewardData.RewardType.Item, rewardItem, 0));
-                }
-            }
+            RewardData.setRewardData(rewardName, tempQuiz);
             // 将Quiz加入集合中
             choiceQuizList.add(tempQuiz);
             i++;
@@ -198,17 +186,7 @@ public class YamlControl implements QuizStorage {
             // 设置奖品
             Object rewardObj = tempMap.get("Reward");
             String rewardName = rewardObj.toString();
-            if (RewardData.numberCheck(rewardName)) {
-                // 设置为经济Vault格式
-                tempQuiz.setReward(new RewardData( rewardName, RewardData.RewardType.Vault,null, Integer.parseInt(rewardName)));
-            } else {
-                // 设置为实物格式
-                Material rewardMaterial = Material.matchMaterial(rewardName.toUpperCase());
-                if (rewardMaterial != null) {
-                    ItemStack rewardItem = new ItemStack(rewardMaterial);
-                    tempQuiz.setReward(new RewardData(rewardName, RewardData.RewardType.Item, rewardItem, 0));
-                }
-            }
+            RewardData.setRewardData(rewardName, tempQuiz);
             // 将Quiz加入集合中
             blankQuizList.add(tempQuiz);
             i++;
@@ -272,18 +250,7 @@ public class YamlControl implements QuizStorage {
         optionList.add(optionD);
         tempQuiz.setOptions(optionList);
 
-        // 设置奖品
-        if (RewardData.numberCheck(reward)) {
-            // 设置为经济Vault格式
-            tempQuiz.setReward(new RewardData(reward, RewardData.RewardType.Vault, null, Integer.parseInt(reward)));
-        } else {
-            // 设置为实物格式
-            Material rewardMaterial = Material.matchMaterial(reward.toUpperCase());
-            if (rewardMaterial != null) {
-                ItemStack rewardItem = new ItemStack(rewardMaterial);
-                tempQuiz.setReward(new RewardData(reward, RewardData.RewardType.Item, rewardItem, 0));
-            }
-        }
+        RewardData.setRewardData(reward, tempQuiz);
 
         choiceQuizList.add(tempQuiz);
         saveQuizFile();
@@ -298,17 +265,7 @@ public class YamlControl implements QuizStorage {
         tempQuiz.setAnswer(answer);
 
         // 设置奖品
-        if (RewardData.numberCheck(reward)) {
-            // 设置为经济Vault格式
-            tempQuiz.setReward(new RewardData(reward, RewardData.RewardType.Vault, null, Integer.parseInt(reward)));
-        } else {
-            // 设置为实物格式
-            Material rewardMaterial = Material.matchMaterial(reward.toUpperCase());
-            if (rewardMaterial != null) {
-                ItemStack rewardItem = new ItemStack(rewardMaterial);
-                tempQuiz.setReward(new RewardData(reward, RewardData.RewardType.Item, rewardItem, 0));
-            }
-        }
+        RewardData.setRewardData(reward, tempQuiz);
 
         blankQuizList.add(tempQuiz);
         saveQuizFile();

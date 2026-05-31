@@ -10,9 +10,7 @@ Now, it uses [AnvilGUI](https://github.com/WesJD/AnvilGUI) to provide blank quiz
 
 ## Configuration
 
-The Q&A system has two ways to storage data: YAML, MYSQL. 
-
-The config file has been updated! You can easily set some configurations now.
+The Q&A system has two ways to storage data: YAML, MYSQL.
 
 > Since plugin version 1.1.0, fill-in-the-blanks quiz has been supported!
 
@@ -43,6 +41,10 @@ Blank:
     Reward: DIAMOND
 ```
 
+> Since version 1.1.2, you can set `Reward` a number if you have Vault based plugins. 
+> 
+> However, they must be written in a String format, which means wrapping them with double quotation marks.
+
 Or if you prefer `MYSQL`, please create a new database named `serverquiz` and set your basic config:
 
 ```yaml
@@ -55,7 +57,7 @@ config:
   database: serverquiz
 ```
 
-Other config options is shown below:
+The config file has been updated! You can easily set some configurations now. Other config options is shown below:
 
 ```yml
 # Check for the plugin's update info
@@ -84,6 +86,8 @@ messages:
   correct: "You have solved the quiz!"
   # Your answer is wrong
   wrong: "Your answer is wrong!"
+  # Send Reward
+  sendReward: "Reward has been sent to you: "
   # Update player's score
   score: "Your score board has been updated!"
 
