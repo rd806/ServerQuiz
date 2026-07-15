@@ -1,6 +1,9 @@
-package org.rd806.serverquiz;
+package org.rd806.serverquiz.placeholder;
 
+import me.clip.placeholderapi.PlaceholderAPI;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.rd806.serverquiz.ServerQuiz;
 import org.rd806.serverquiz.quiz.content.ScoreData;
 
 import java.util.ArrayList;
@@ -10,11 +13,14 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+// 内置的 Placeholder
 public class Placeholder {
 
     private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("%([^%]+)%");
     private final Map<String, VariableProvider> providers = new HashMap<>();
     private VariableProvider defaultProvider = (key, player) -> "%" + key + "%";
+
+    private boolean hasPlaceholderAPI = false;
 
     public Placeholder() {
         registerProvider("serverquiz_", (key, player) -> {
@@ -54,28 +60,32 @@ public class Placeholder {
         this.defaultProvider = provider;
     }
 
-    public String resolve(String text, Player player) {
+    public String resolve(Player player, String text) {
         if (text == null || text.isEmpty()) return text;
 
+        // 加载了 PlaceholderAPI，直接调用
+        if (hasPlaceholderAPI) {
+            return PlaceholderAPI.setPlaceholders(player, text);
+        }
+        // 使用内置
         Matcher matcher = PLACEHOLDER_PATTERN.matcher(text);
         StringBuilder result = new StringBuilder();
-
         while (matcher.find()) {
             String placeholder = matcher.group(1);
             String replacement = getReplacement(placeholder, player);
             matcher.appendReplacement(result, Matcher.quoteReplacement(replacement));
         }
         matcher.appendTail(result);
-
         return result.toString();
     }
 
-    public List<String> resolve(List<String> texts, Player player) {
+    // 返回Placeholder的字符串
+    public List<String> resolve(Player player, List<String> texts) {
         if (texts == null || texts.isEmpty()) return new ArrayList<>();
 
         List<String> result = new ArrayList<>();
         for (String text : texts) {
-            result.add(resolve(text, player));
+            result.add(resolve(player, text));
         }
         return result;
     }
@@ -90,5 +100,23 @@ public class Placeholder {
             }
         }
         return defaultProvider.getValue(placeholder, player);
+    }
+
+    // 检查是否加载 PlaceholderAPI
+    public void checkPlaceholderAPI() {
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+            ServerQuiz.logger.info("Find PlaceholderAPI!");
+            Expansion expansion = new Expansion(ServerQuiz.main);
+            // 注册扩展
+            if (expansion.register()) {
+                ServerQuiz.logger.info("PlaceholderAPI Expansion has been registered!");
+                this.hasPlaceholderAPI = true;
+            } else {
+                ServerQuiz.logger.warning("PlaceholderAPI Expansion could not be registered!");
+            }
+        } else {
+            ServerQuiz.logger.warning("Fail to find PlaceholderAPI, use build-in ones!");
+            this.hasPlaceholderAPI = false;
+        }
     }
 }

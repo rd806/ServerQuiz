@@ -103,12 +103,12 @@ public class QuizGui {
         // 获取计分表信息
         String title = ServerQuiz.config.getString("gui.scoreBoard.title", "Your quiz score board");
         List<String> lines = ServerQuiz.config.getStringList("gui.scoreBoard.lore");
-        List<String> statistic = ServerQuiz.main.placeholder.resolve(lines, player);
+        lines = ServerQuiz.main.placeholder.resolve(player, lines);
 
         if (skullMeta != null) {
             skullMeta.setOwningPlayer(player);
             skullMeta.setDisplayName(title);
-            skullMeta.setLore(statistic);
+            skullMeta.setLore(lines);
             head.setItemMeta(skullMeta);
         }
         return head;

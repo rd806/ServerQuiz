@@ -8,6 +8,7 @@ import org.rd806.serverquiz.command.QuizCommand;
 import org.rd806.serverquiz.command.QuizTabCompleter;
 import org.rd806.serverquiz.gui.QuizEvent;
 import org.rd806.serverquiz.gui.QuizGui;
+import org.rd806.serverquiz.placeholder.Placeholder;
 import org.rd806.serverquiz.quiz.QuizConfig;
 import org.rd806.serverquiz.quiz.content.QuizEntry;
 import org.rd806.serverquiz.quiz.storage.QuizStorage;
@@ -45,11 +46,11 @@ public final class ServerQuiz extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        // Plugin startup logic
         // 初始化 bstats 服务
         new Metrics(this, 31703);
-        // 加载 Vault 库
+        // 加载第三方库
         vault = new Vault();
+        placeholder.checkPlaceholderAPI();
 
         logger.info("ServerQuiz has been enabled!");
         logger.info(" ");
@@ -80,7 +81,6 @@ public final class ServerQuiz extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        // Plugin shutdown logic
         logger.info("ServerQuiz has been disabled!");
         logger.info(" ");
         logger.info("░██████╗███████╗██████╗░██╗░░░██╗███████╗██████╗░░██████╗░██╗░░░██╗██╗███████╗");
