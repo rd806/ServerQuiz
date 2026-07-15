@@ -6,7 +6,6 @@ import org.rd806.serverquiz.quiz.content.RewardData;
 import org.rd806.serverquiz.quiz.content.ScoreData;
 import org.rd806.serverquiz.ServerQuiz;
 import org.rd806.serverquiz.quiz.content.QuizEntry;
-import org.rd806.serverquiz.quiz.content.QuizType;
 
 import java.io.File;
 import java.io.IOException;
@@ -73,12 +72,12 @@ public class YamlControl implements QuizStorage {
 
             // 设置选项
             Map<String, String> options = new LinkedHashMap<>();
-            List<String> optionList = quizEntry.getOptions();
+            List<QuizEntry.QuizOption> optionList = quizEntry.getOptions();
             if (optionList != null && optionList.size() >= 4) {
-                options.put("A", optionList.get(0));
-                options.put("B", optionList.get(1));
-                options.put("C", optionList.get(2));
-                options.put("D", optionList.get(3));
+                options.put("A", optionList.get(0).text);
+                options.put("B", optionList.get(1).text);
+                options.put("C", optionList.get(2).text);
+                options.put("D", optionList.get(3).text);
                 quizData.put("Options", options);
             }
 
@@ -150,17 +149,16 @@ public class YamlControl implements QuizStorage {
             QuizEntry tempQuiz = new QuizEntry();
             // 设置问题
             tempQuiz.setId(i);
-            tempQuiz.setType(QuizType.Choice);
+            tempQuiz.setType(QuizEntry.QuizType.Choice);
             tempQuiz.setQuestion((String) tempMap.get("Question"));
             tempQuiz.setAnswer((String) tempMap.get("Answer"));
             // 设置选项
             Map<?, ?> options = (Map<?, ?>) tempMap.get("Options");
-
-            List<String> optionList = new ArrayList<>();
-            optionList.add((String) options.get("A"));
-            optionList.add((String) options.get("B"));
-            optionList.add((String) options.get("C"));
-            optionList.add((String) options.get("D"));
+            List<QuizEntry.QuizOption> optionList = new ArrayList<>();
+            optionList.add(new QuizEntry.QuizOption("A", (String) options.get("A")));
+            optionList.add(new QuizEntry.QuizOption("B", (String) options.get("B")));
+            optionList.add(new QuizEntry.QuizOption("C", (String) options.get("C")));
+            optionList.add(new QuizEntry.QuizOption("D", (String) options.get("D")));
             tempQuiz.setOptions(optionList);
             // 设置奖品
             Object rewardObj = tempMap.get("Reward");
@@ -180,7 +178,7 @@ public class YamlControl implements QuizStorage {
         for (Map<?, ?> tempMap : blankQuizMap) {
             QuizEntry tempQuiz = new QuizEntry();
             tempQuiz.setId(i);
-            tempQuiz.setType(QuizType.Blank);
+            tempQuiz.setType(QuizEntry.QuizType.Blank);
             tempQuiz.setQuestion((String) tempMap.get("Question"));
             tempQuiz.setAnswer((String) tempMap.get("Answer"));
             // 设置奖品
@@ -239,15 +237,15 @@ public class YamlControl implements QuizStorage {
     @Override
     public boolean addChoiceQuiz(String question, String optionA, String optionB, String optionC, String optionD, String answer, String reward) {
         QuizEntry tempQuiz = new QuizEntry();
-        tempQuiz.setType(QuizType.Choice);
+        tempQuiz.setType(QuizEntry.QuizType.Choice);
         tempQuiz.setQuestion(question);
         tempQuiz.setAnswer(answer);
 
-        List<String> optionList = new ArrayList<>();
-        optionList.add(optionA);
-        optionList.add(optionB);
-        optionList.add(optionC);
-        optionList.add(optionD);
+        List<QuizEntry.QuizOption> optionList = new ArrayList<>();
+        optionList.add(new QuizEntry.QuizOption("A", optionA));
+        optionList.add(new QuizEntry.QuizOption("B", optionB));
+        optionList.add(new QuizEntry.QuizOption("C", optionC));
+        optionList.add(new QuizEntry.QuizOption("D", optionD));
         tempQuiz.setOptions(optionList);
 
         RewardData.setRewardData(reward, tempQuiz);
@@ -260,7 +258,7 @@ public class YamlControl implements QuizStorage {
     @Override
     public boolean addBlankQuiz(String question, String answer, String reward) {
         QuizEntry tempQuiz = new QuizEntry();
-        tempQuiz.setType(QuizType.Blank);
+        tempQuiz.setType(QuizEntry.QuizType.Blank);
         tempQuiz.setQuestion(question);
         tempQuiz.setAnswer(answer);
 

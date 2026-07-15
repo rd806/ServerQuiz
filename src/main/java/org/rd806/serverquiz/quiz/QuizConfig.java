@@ -172,10 +172,10 @@ public class QuizConfig {
         sender.sendMessage("Question: " + quiz.getQuestion());
         switch (quiz.getType()) {
             case Choice -> {
-                sender.sendMessage("Option A: " + quiz.getOptions().get(0));
-                sender.sendMessage("Option B: " + quiz.getOptions().get(1));
-                sender.sendMessage("Option C: " + quiz.getOptions().get(2));
-                sender.sendMessage("Option D: " + quiz.getOptions().get(3));
+                sender.sendMessage("Option A: " + quiz.getOptions().get(0).text);
+                sender.sendMessage("Option B: " + quiz.getOptions().get(1).text);
+                sender.sendMessage("Option C: " + quiz.getOptions().get(2).text);
+                sender.sendMessage("Option D: " + quiz.getOptions().get(3).text);
                 sender.sendMessage("Answer: " + quiz.getAnswer());
             }
             case Blank -> sender.sendMessage("Answer: " + quiz.getAnswer());

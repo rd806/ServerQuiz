@@ -50,6 +50,7 @@ gui:
   reward: "Reward"
   # Available for choice quiz
   option: "Option "
+  random: true
   # Available for blank quiz
   answerSheet: "Answer sheet"
   answerTitle: "Type your Answer"

@@ -5,7 +5,6 @@ import org.rd806.serverquiz.quiz.content.ScoreData;
 import org.rd806.serverquiz.ServerQuiz;
 import org.rd806.serverquiz.database.DataSourceManager;
 import org.rd806.serverquiz.quiz.content.QuizEntry;
-import org.rd806.serverquiz.quiz.content.QuizType;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -97,23 +96,21 @@ public class SqlControl implements QuizStorage {
                 temp.setId(resultSet.getInt("id"));
                 temp.setQuestion(resultSet.getString("question"));
                 temp.setAnswer(resultSet.getString("answer"));
-
                 // 设置奖励
                 String rewardName = resultSet.getString("reward");
                 RewardData.setRewardData(rewardName, temp);
-
                 String type = resultSet.getString("type");
                 if (type.equals("choice")) {
                     // 设置选项
-                    temp.setType(QuizType.Choice);
-                    List<String> options = new ArrayList<>();
-                    options.add(resultSet.getString("option_a"));
-                    options.add(resultSet.getString("option_b"));
-                    options.add(resultSet.getString("option_c"));
-                    options.add(resultSet.getString("option_d"));
+                    temp.setType(QuizEntry.QuizType.Choice);
+                    List<QuizEntry.QuizOption> options = new ArrayList<>();
+                    options.add(new QuizEntry.QuizOption("A", resultSet.getString("option_a")));
+                    options.add(new QuizEntry.QuizOption("B", resultSet.getString("option_b")));
+                    options.add(new QuizEntry.QuizOption("C", resultSet.getString("option_c")));
+                    options.add(new QuizEntry.QuizOption("D", resultSet.getString("option_d")));
                     temp.setOptions(options);
                 } else {
-                    temp.setType(QuizType.Blank);
+                    temp.setType(QuizEntry.QuizType.Blank);
                 }
 
                 return temp;

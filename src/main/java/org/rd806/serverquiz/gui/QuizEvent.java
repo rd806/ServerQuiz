@@ -25,19 +25,19 @@ public class QuizEvent implements Listener {
             String response;
             switch (clicked.getType()) {
                 case RED_WOOL:
-                    response = "A";
+                    response = ServerQuiz.main.quizGui.entry.getOptions().get(0).label;
                     ServerQuiz.main.quizConfig.check(player, response);
                     break;
                 case YELLOW_WOOL:
-                    response = "B";
+                    response = ServerQuiz.main.quizGui.entry.getOptions().get(1).label;
                     ServerQuiz.main.quizConfig.check(player, response);
                     break;
                 case BLUE_WOOL:
-                    response = "C";
+                    response = ServerQuiz.main.quizGui.entry.getOptions().get(2).label;
                     ServerQuiz.main.quizConfig.check(player, response);
                     break;
                 case GREEN_WOOL:
-                    response = "D";
+                    response = ServerQuiz.main.quizGui.entry.getOptions().get(3).label;
                     ServerQuiz.main.quizConfig.check(player, response);
                     break;
                 case ANVIL:

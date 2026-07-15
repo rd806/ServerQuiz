@@ -8,7 +8,7 @@ public class QuizEntry {
     private QuizType type;
     private String question;
     private String answer;
-    private List<String> options;
+    private List<QuizOption> options;
     private RewardData reward;
 
     private Set<UUID> answeredPlayers;
@@ -18,6 +18,23 @@ public class QuizEntry {
         this.id = -1;
         this.options = new ArrayList<>();
         this.answeredPlayers = new HashSet<>();
+    }
+
+    // 选项类型
+    public static class QuizOption {
+        public String label;
+        public String text;
+
+        public QuizOption(String label, String text) {
+            this.label = label;
+            this.text = text;
+        }
+    }
+
+    // 题目类型
+    public enum QuizType {
+        Choice,
+        Blank
     }
 
     public int getId() { return id; }
@@ -32,8 +49,8 @@ public class QuizEntry {
     public String getAnswer() { return answer; }
     public void setAnswer(String answer) { this.answer = answer; }
 
-    public List<String> getOptions() { return options; }
-    public void setOptions(List<String> options) { this.options = options; }
+    public List<QuizOption> getOptions() { return options; }
+    public void setOptions(List<QuizOption> options) { this.options = options; }
 
     public RewardData getReward() { return reward; }
     public void setReward(RewardData reward) { this.reward = reward; }
@@ -43,5 +60,4 @@ public class QuizEntry {
 
     public UUID getWinner() { return winner; }
     public void setWinner(UUID winner) { this.winner = winner; }
-
 }

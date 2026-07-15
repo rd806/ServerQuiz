@@ -9,6 +9,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.rd806.serverquiz.ServerQuiz;
+import org.rd806.serverquiz.quiz.content.QuizEntry;
 import org.rd806.serverquiz.quiz.content.RewardData;
 
 import java.util.ArrayList;
@@ -18,16 +19,24 @@ import java.util.List;
 
 public class QuizGui {
 
-    private final ServerQuiz plugin = ServerQuiz.main;
+    // 复制一份 QuizEntry 供打乱选项
+    public QuizEntry entry;
     private final Inventory quizMenu;
 
     public QuizGui() {
         quizMenu = Bukkit.createInventory(null, 45, ServerQuiz.config.getString("gui.title", "Quiz Menu"));
     }
 
+    // 打乱选项
+    private void shuffle(QuizEntry entry) {
+        List<QuizEntry.QuizOption> options = entry.getOptions();
+        Collections.shuffle(options);
+    }
+
     // Quiz界面
     public Inventory createQuizMenu(Player player) {
         quizMenu.clear();
+        entry = ServerQuiz.main.quiz;
         // 左上角
         AddItemToMenu(quizMenu, 0, Material.CRAFTING_TABLE,
                 "§r"+ "ServerQuiz",
@@ -35,22 +44,21 @@ public class QuizGui {
         // 设置题目
         AddItemToMenu(quizMenu, 4, Material.PAPER,
                 "§r" + ServerQuiz.config.getString("gui.question", "Question"),
-                "§r§b" + plugin.quiz.getQuestion());
+                "§r§b" + entry.getQuestion());
         // 设置奖品
         // 检查是否为数字
-        if (plugin.quiz.getReward().rewardType() == RewardData.RewardType.Item) {
-            AddItemToMenu(quizMenu, 8, plugin.quiz.getReward().item().getType(),
+        if (entry.getReward().rewardType() == RewardData.RewardType.Item) {
+            AddItemToMenu(quizMenu, 8, entry.getReward().item().getType(),
                     "§r" + ServerQuiz.config.getString("gui.reward", "Reward"),
-                    "§r§b" + plugin.quiz.getReward().item().getType());
+                    "§r§b" + entry.getReward().item().getType());
         } else {
             AddItemToMenu(quizMenu, 8, Material.EMERALD,
                     "§r" + ServerQuiz.config.getString("gui.reward", "Reward"),
-                    "§r§b" + plugin.quiz.getReward().value());
+                    "§r§b" + entry.getReward().value());
         }
 
-
         // 设置回答区域
-        switch (plugin.quiz.getType()) {
+        switch (entry.getType()) {
             case Choice:
                 multipleChoices();
                 break;
@@ -108,19 +116,23 @@ public class QuizGui {
 
     // 选择题界面
     private void multipleChoices() {
+        // 打乱选项
+        if (ServerQuiz.config.getBoolean("gui.random", false)) {
+            shuffle(entry);
+        }
         // 设置选项
         AddItemToMenu(quizMenu, 19, Material.RED_WOOL,
                 "§r" + ServerQuiz.config.getString("gui.option", "Option") + "A",
-                "§r§b" + plugin.quiz.getOptions().get(0));
+                "§r§b" + entry.getOptions().get(0).text);
         AddItemToMenu(quizMenu, 21, Material.YELLOW_WOOL,
                 "§r" + ServerQuiz.config.getString("gui.option", "Option") + "B",
-                "§r§b" + plugin.quiz.getOptions().get(1));
+                "§r§b" + entry.getOptions().get(1).text);
         AddItemToMenu(quizMenu, 23, Material.BLUE_WOOL,
                 "§r" + ServerQuiz.config.getString("gui.option", "Option") + "C",
-                "§r§b" + plugin.quiz.getOptions().get(2));
+                "§r§b" + entry.getOptions().get(2).text);
         AddItemToMenu(quizMenu, 25, Material.GREEN_WOOL,
                 "§r" + ServerQuiz.config.getString("gui.option", "Option") + "D",
-                "§r§b" + plugin.quiz.getOptions().get(3));
+                "§r§b" + entry.getOptions().get(3).text);
     }
 
     // 填空题界面
@@ -142,7 +154,7 @@ public class QuizGui {
                 .text("Good luck!")
                 .title(ServerQuiz.config.getString("gui.ansewerTitle", "Type your Answer"))
                 .itemLeft(new ItemStack(Material.PAPER))
-                .plugin(plugin)
+                .plugin(ServerQuiz.main)
                 .open(player);
     }
 }
