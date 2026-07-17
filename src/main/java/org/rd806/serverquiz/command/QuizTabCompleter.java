@@ -16,35 +16,35 @@ public class QuizTabCompleter implements TabCompleter {
 
         if (command.getName().equalsIgnoreCase("serverquiz") || command.getName().equalsIgnoreCase("quiz")) {
             if (args.length == 1) {
-                AddCompletions(completions, "initial", "send", "open", "show", "edit", "reload");
+                addCompletions(completions, "initial", "send", "open", "show", "edit", "reload");
                 return completions;
             } else if (args.length == 2) {
                 switch (args[0]) {
                     case "send":
-                        AddCompletions(completions, "<question ID>");
+                        addCompletions(completions, "<question ID>");
                         return completions;
                     case "show":
-                        AddCompletions(completions, "num", "interval", "storage", "info", "score");
+                        addCompletions(completions, "num", "interval", "storage", "info", "score");
                         return completions;
                     case "edit":
-                        AddCompletions(completions, "interval", "storage", "choice", "blank");
+                        addCompletions(completions, "interval", "storage", "choice", "blank");
                         return completions;
                 }
             }  else if (args.length == 3) {
                 switch (args[1]) {
                     case "info":
-                        AddCompletions(completions, "<quiz ID>");
+                        addCompletions(completions, "<quiz ID>");
                     case "score":
-                        AddCompletions(completions, "<target Player>");
+                        addCompletions(completions, "<target Player>");
                     case "choice", "blank":
-                        AddCompletions(completions, "insert", "alter", "delete");
+                        addCompletions(completions, "insert", "alter");
                         return completions;
                 }
             } else if (args.length >= 4) {
                 if (args[1].equals("choice")) {
                     switch (args[2]) {
                         case "insert":
-                            AddCompletions(completions, "<question> <optionA> <optionB> <optionC> <optionD> <answer> <reward>");
+                            addCompletions(completions, "<question> <optionA> <optionB> <optionC> <optionD> <answer> <reward>");
                             return completions;
                         case "alter":
                         case "delete":
@@ -52,7 +52,7 @@ public class QuizTabCompleter implements TabCompleter {
                 } else if (args[1].equals("blank")) {
                     switch (args[2]) {
                         case "insert":
-                            AddCompletions(completions, "<question> <answer> <reward>");
+                            addCompletions(completions, "<question> <answer> <reward>");
                             return completions;
                         case "alter":
                         case "delete":
@@ -63,7 +63,7 @@ public class QuizTabCompleter implements TabCompleter {
         return null;
     }
 
-    private void AddCompletions(List<String> completions, String... strings) {
+    private void addCompletions(List<String> completions, String... strings) {
         // 清除原来的内容
         completions.clear();
         if (strings != null && strings.length > 0) {

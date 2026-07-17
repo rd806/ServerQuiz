@@ -45,7 +45,7 @@ Blank:
 > 
 > However, they must be written in a String format, which means wrapping them with double quotation marks.
 
-Or if you prefer `MYSQL`, please create a new database named `serverquiz` and set your basic config:
+Or if you prefer `MYSQL`, please create a new database named `serverquiz` and set your basic config in advance:
 
 ```yaml
 config:
@@ -57,17 +57,22 @@ config:
   database: serverquiz
 ```
 
-The config file has been updated! You can easily set some configurations now. Other config options is shown below:
+The configuration file has been updated! You can easily set some configurations now. Other config options is shown below:
 
 ```yml
-# Check for the plugin's update info
+###########################################
+##             Update checker            ##
+###########################################
+
 updateChecker:
   # Option: modrinth/github
   source: modrinth
   enable: true
 
+##############################################
+##            Broadcast messages            ##
+##############################################
 
-# Broadcast messages when a new quiz begin
 broadcast:
   # The text must be written in a single line
   text: "§e============\n§6§lNew Quiz begins! \n【Click here】 to join§r§e\n============"
@@ -75,8 +80,10 @@ broadcast:
   # The time between each quiz, the unit is seconds
   interval: 900
 
+##############################################
+##             Answer messages              ##
+##############################################
 
-# Messages sent when player answer a quiz
 messages:
   # A player has already given the correct answer
   hasWinner: "The quiz has already been solved!"
@@ -91,17 +98,23 @@ messages:
   # Update player's score
   score: "Your score board has been updated!"
 
+##############################################
+##              The GUI text                ##
+##############################################
 
-# The GUI text
 gui:
   title: "Quiz Menu"
   question: "Question"
   reward: "Reward"
   # Available for choice quiz
-  option: "Option "
+  choice:
+    option: "Option "
+    # Whether to arrange options randomly
+    random: true
   # Available for blank quiz
-  answerSheet: "Answer sheet"
-  answerTitle: "Type your Answer"
+  blank:
+    answerSheet: "Answer sheet"
+    answerTitle: "Type your Answer"
   # Scoreboard settings
   scoreBoard:
     title: "§rYour quiz score board"

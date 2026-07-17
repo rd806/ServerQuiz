@@ -117,28 +117,28 @@ public class QuizGui {
     // 选择题界面
     private void multipleChoices() {
         // 打乱选项
-        if (ServerQuiz.config.getBoolean("gui.random", false)) {
+        if (ServerQuiz.config.getBoolean("gui.choice.random", false)) {
             shuffle(entry);
         }
         // 设置选项
         AddItemToMenu(quizMenu, 19, Material.RED_WOOL,
-                "§r" + ServerQuiz.config.getString("gui.option", "Option") + "A",
+                "§r" + ServerQuiz.config.getString("gui.choice.option", "Option") + "A",
                 "§r§b" + entry.getOptions().get(0).text);
         AddItemToMenu(quizMenu, 21, Material.YELLOW_WOOL,
-                "§r" + ServerQuiz.config.getString("gui.option", "Option") + "B",
+                "§r" + ServerQuiz.config.getString("gui.choice.option", "Option") + "B",
                 "§r§b" + entry.getOptions().get(1).text);
         AddItemToMenu(quizMenu, 23, Material.BLUE_WOOL,
-                "§r" + ServerQuiz.config.getString("gui.option", "Option") + "C",
+                "§r" + ServerQuiz.config.getString("gui.choice.option", "Option") + "C",
                 "§r§b" + entry.getOptions().get(2).text);
         AddItemToMenu(quizMenu, 25, Material.GREEN_WOOL,
-                "§r" + ServerQuiz.config.getString("gui.option", "Option") + "D",
+                "§r" + ServerQuiz.config.getString("gui.choice.option", "Option") + "D",
                 "§r§b" + entry.getOptions().get(3).text);
     }
 
     // 填空题界面
     private void fillBlank() {
         AddItemToMenu(quizMenu, 22, Material.ANVIL,
-                ServerQuiz.config.getString("gui.answerSheet", "§r" + "Answer Sheet"));
+                ServerQuiz.config.getString("gui.blank.answerSheet", "§r" + "Answer Sheet"));
     }
 
     public void createGUI(Player player) {
@@ -152,7 +152,7 @@ public class QuizGui {
                     return List.of(AnvilGUI.ResponseAction.close());
                 })
                 .text("Good luck!")
-                .title(ServerQuiz.config.getString("gui.ansewerTitle", "Type your Answer"))
+                .title(ServerQuiz.config.getString("gui.blank.ansewerTitle", "Type your Answer"))
                 .itemLeft(new ItemStack(Material.PAPER))
                 .plugin(ServerQuiz.main)
                 .open(player);

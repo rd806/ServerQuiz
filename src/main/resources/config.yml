@@ -10,15 +10,19 @@ config:
   database: serverquiz
   useSSL: false
 
+###########################################
+##             Update checker            ##
+###########################################
 
-# Check for the plugin's update info
 updateChecker:
   # Option: modrinth/github
   source: modrinth
   enable: true
 
+##############################################
+##            Broadcast messages            ##
+##############################################
 
-# Broadcast messages when a new quiz begin
 broadcast:
   # The text must be written in a single line
   text: "§e============\n§6§lNew Quiz begins! \n【Click here】 to join§r§e\n============"
@@ -26,8 +30,10 @@ broadcast:
   # The time between each quiz, the unit is seconds
   interval: 900
 
+##############################################
+##             Answer messages              ##
+##############################################
 
-# Messages sent when player answer a quiz
 messages:
   # A player has already given the correct answer
   hasWinner: "The quiz has already been solved!"
@@ -42,18 +48,23 @@ messages:
   # Update player's score
   score: "Your score board has been updated!"
 
+##############################################
+##              The GUI text                ##
+##############################################
 
-# The GUI text
 gui:
   title: "Quiz Menu"
   question: "Question"
   reward: "Reward"
   # Available for choice quiz
-  option: "Option "
-  random: true
+  choice:
+    option: "Option "
+    # Whether to arrange options randomly
+    random: true
   # Available for blank quiz
-  answerSheet: "Answer sheet"
-  answerTitle: "Type your Answer"
+  blank:
+    answerSheet: "Answer sheet"
+    answerTitle: "Type your Answer"
   # Scoreboard settings
   scoreBoard:
     title: "§rYour quiz score board"

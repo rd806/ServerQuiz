@@ -1,5 +1,7 @@
 package org.rd806.serverquiz.gui;
 
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -42,6 +44,13 @@ public class QuizEvent implements Listener {
                     break;
                 case ANVIL:
                     ServerQuiz.main.quizGui.createGUI(player);
+                    break;
+                case REDSTONE_BLOCK:
+                    TextComponent component = new TextComponent("§aClick here to visit the plugin website.");
+                    // 设置点击事件为打开网址
+                    component.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://modrinth.com/plugin/serverquiz"));
+                    player.spigot().sendMessage(component);
+                    player.closeInventory();
                     break;
                 default:
                     break;
