@@ -2,7 +2,8 @@ package org.rd806.serverquiz.storage.yaml;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.rd806.serverquiz.quiz.RewardData;
+import org.bukkit.inventory.ItemStack;
+import org.rd806.serverquiz.quiz.QuizType;
 import org.rd806.serverquiz.quiz.ScoreData;
 import org.rd806.serverquiz.ServerQuiz;
 import org.rd806.serverquiz.quiz.QuizEntry;
@@ -82,8 +83,9 @@ public class YamlControl implements QuizStorage {
                 quizData.put("Options", options);
             }
 
-            // 设置奖励
-            String reward = quizEntry.getReward().rawData();
+            // 设置分数与奖励
+            quizData.put("Score", quizEntry.getScore());
+            String reward = quizEntry.getReward() == null ? "" : quizEntry.getReward().getType().toString();
             quizData.put("Reward", reward);
 
             choiceQuizMap.add(quizData);
@@ -98,10 +100,10 @@ public class YamlControl implements QuizStorage {
             quizData.put("Question", quizEntry.getQuestion());
             quizData.put("Answer", quizEntry.getAnswer());
 
-            // 设置奖励
-            String reward = quizEntry.getReward().rawData();
+            // 设置分数与奖励
+            quizData.put("Score", quizEntry.getScore());
+            String reward = quizEntry.getReward() == null ? "" : quizEntry.getReward().getType().toString();
             quizData.put("Reward", reward);
-
 
             blankQuizMap.add(quizData);
         }
@@ -115,6 +117,7 @@ public class YamlControl implements QuizStorage {
             scoreData.put("Name", entry.getKey());
             scoreData.put("CorrectAnswers", entry.getValue().correctAnswers());
             scoreData.put("TotalAnswers", entry.getValue().totalAnswers());
+            scoreData.put("Scores", entry.getValue().scores());
             scoreRawMap.add(scoreData);
         }
     }
@@ -147,12 +150,9 @@ public class YamlControl implements QuizStorage {
         }
 
         for (Map<?, ?> tempMap : choiceQuizMap) {
-            QuizEntry tempQuiz = new QuizEntry();
             // 设置问题
-            tempQuiz.setId(i);
-            tempQuiz.setType(QuizEntry.QuizType.Choice);
-            tempQuiz.setQuestion((String) tempMap.get("Question"));
-            tempQuiz.setAnswer((String) tempMap.get("Answer"));
+            String question = (String) tempMap.get("Question");
+            String answer = (String) tempMap.get("Answer");
             // 设置选项
             Map<?, ?> options = (Map<?, ?>) tempMap.get("Options");
             List<QuizEntry.QuizOption> optionList = new ArrayList<>();
@@ -160,11 +160,11 @@ public class YamlControl implements QuizStorage {
             optionList.add(new QuizEntry.QuizOption("B", (String) options.get("B")));
             optionList.add(new QuizEntry.QuizOption("C", (String) options.get("C")));
             optionList.add(new QuizEntry.QuizOption("D", (String) options.get("D")));
-            tempQuiz.setOptions(optionList);
-            // 设置奖品
-            Object rewardObj = tempMap.get("Reward");
-            String rewardName = rewardObj.toString();
-            RewardData.setRewardData(rewardName, tempQuiz);
+            // 设置分数与奖品
+            int score = (Integer) tempMap.get("Score");
+            ItemStack reward = (ItemStack) tempMap.get("Reward");
+
+            QuizEntry tempQuiz = new QuizEntry(i, QuizType.Choice, question, answer, optionList, score, reward);
             // 将Quiz加入集合中
             choiceQuizList.add(tempQuiz);
             i++;
@@ -179,13 +179,12 @@ public class YamlControl implements QuizStorage {
         for (Map<?, ?> tempMap : blankQuizMap) {
             QuizEntry tempQuiz = new QuizEntry();
             tempQuiz.setId(i);
-            tempQuiz.setType(QuizEntry.QuizType.Blank);
+            tempQuiz.setType(QuizType.Blank);
             tempQuiz.setQuestion((String) tempMap.get("Question"));
             tempQuiz.setAnswer((String) tempMap.get("Answer"));
-            // 设置奖品
-            Object rewardObj = tempMap.get("Reward");
-            String rewardName = rewardObj.toString();
-            RewardData.setRewardData(rewardName, tempQuiz);
+            // 设置分数与奖品
+            tempQuiz.setScore(getInt(tempMap, "Score"));
+            tempQuiz.setReward(getString(tempMap));
             // 将Quiz加入集合中
             blankQuizList.add(tempQuiz);
             i++;
@@ -202,12 +201,25 @@ public class YamlControl implements QuizStorage {
         // 获取玩家分数
         for (Map<?, ?> tempMap : scoreRawMap) {
             String name = (String) tempMap.get("Name");
-            int correctAnswers = (int) tempMap.get("CorrectAnswers");
-            int totalAnswers = (int) tempMap.get("TotalAnswers");
-            ScoreData scoreData = new ScoreData(correctAnswers, totalAnswers);
+            int correctAnswers = getInt(tempMap, "CorrectAnswers");
+            int totalAnswers = getInt(tempMap, "TotalAnswers");
+            int scores = getInt(tempMap, "Scores");
+            ScoreData scoreData = new ScoreData(correctAnswers, totalAnswers, scores);
 
             scoreMap.put(name, scoreData);
         }
+    }
+
+    // 读取Map中的整数，缺失时返回0
+    private int getInt(Map<?, ?> map, String key) {
+        Object value = map.get(key);
+        return value instanceof Number number ? number.intValue() : 0;
+    }
+
+    // 读取Map中的字符串，缺失时返回null
+    private String getString(Map<?, ?> map) {
+        Object value = map.get("Reward");
+        return value == null ? null : value.toString();
     }
 
     // 获取特定的Quiz
@@ -224,7 +236,7 @@ public class YamlControl implements QuizStorage {
     public boolean createScoreBoard(String name, UUID uuid) {
         // 存在则不创建
         if (getPlayerScore(name) != null) return true;
-        scoreMap.put(name, new ScoreData(0, 0));
+        scoreMap.put(name, new ScoreData(0, 0, 0));
         saveScoreFile();
         return true;
     }
@@ -236,11 +248,12 @@ public class YamlControl implements QuizStorage {
     }
 
     @Override
-    public boolean addChoiceQuiz(String question, String optionA, String optionB, String optionC, String optionD, String answer, String reward) {
+    public boolean addChoiceQuiz(String question, String optionA, String optionB, String optionC, String optionD, String answer, int score, String reward) {
         QuizEntry tempQuiz = new QuizEntry();
-        tempQuiz.setType(QuizEntry.QuizType.Choice);
+        tempQuiz.setType(QuizType.Choice);
         tempQuiz.setQuestion(question);
         tempQuiz.setAnswer(answer);
+        tempQuiz.setScore(score);
 
         List<QuizEntry.QuizOption> optionList = new ArrayList<>();
         optionList.add(new QuizEntry.QuizOption("A", optionA));
@@ -249,7 +262,7 @@ public class YamlControl implements QuizStorage {
         optionList.add(new QuizEntry.QuizOption("D", optionD));
         tempQuiz.setOptions(optionList);
 
-        RewardData.setRewardData(reward, tempQuiz);
+        tempQuiz.setReward(reward);
 
         choiceQuizList.add(tempQuiz);
         saveQuizFile();
@@ -257,14 +270,15 @@ public class YamlControl implements QuizStorage {
     }
 
     @Override
-    public boolean addBlankQuiz(String question, String answer, String reward) {
+    public boolean addBlankQuiz(String question, String answer, int score, String reward) {
         QuizEntry tempQuiz = new QuizEntry();
-        tempQuiz.setType(QuizEntry.QuizType.Blank);
+        tempQuiz.setType(QuizType.Blank);
         tempQuiz.setQuestion(question);
         tempQuiz.setAnswer(answer);
+        tempQuiz.setScore(score);
 
         // 设置奖品
-        RewardData.setRewardData(reward, tempQuiz);
+        tempQuiz.setReward(reward);
 
         blankQuizList.add(tempQuiz);
         saveQuizFile();
@@ -272,14 +286,14 @@ public class YamlControl implements QuizStorage {
     }
 
     @Override
-    public boolean updateScoreBoard(String name, boolean check) {
+    public boolean updateScoreBoard(String name, boolean check, int score) {
         ScoreData oldData = scoreMap.get(name);
         ScoreData newData;
 
         if (check) {
-            newData = new ScoreData(oldData.correctAnswers() + 1, oldData.totalAnswers() + 1);
+            newData = new ScoreData(oldData.correctAnswers() + 1, oldData.totalAnswers() + 1, oldData.scores() + score);
         } else {
-            newData = new ScoreData(oldData.correctAnswers(), oldData.totalAnswers() + 1);
+            newData = new ScoreData(oldData.correctAnswers(), oldData.totalAnswers() + 1, oldData.scores());
         }
         scoreMap.put(name, newData);
         saveScoreFile();

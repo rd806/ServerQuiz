@@ -1,4 +1,6 @@
-package org.rd806.serverquiz;
+package org.rd806.serverquiz.utils;
+
+import org.rd806.serverquiz.ServerQuiz;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;

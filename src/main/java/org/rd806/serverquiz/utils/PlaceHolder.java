@@ -1,9 +1,10 @@
-package org.rd806.serverquiz.compat.placeholder;
+package org.rd806.serverquiz.utils;
 
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.rd806.serverquiz.ServerQuiz;
+import org.rd806.serverquiz.compat.placeholder.Expansion;
 import org.rd806.serverquiz.quiz.ScoreData;
 
 import java.util.ArrayList;
@@ -13,8 +14,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-// 内置的 Placeholder
-public class Placeholder {
+/// 内置的 Placeholder
+public class PlaceHolder {
 
     private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("%([^%]+)%");
     private final Map<String, VariableProvider> providers = new HashMap<>();
@@ -22,7 +23,7 @@ public class Placeholder {
 
     private boolean hasPlaceholderAPI = false;
 
-    public Placeholder() {
+    public PlaceHolder() {
         registerProvider("serverquiz_", (key, player) -> {
             if (player == null) return "?";
             ScoreData scoreData = ServerQuiz.main.quizConfig.getScoreData(player.getName());
@@ -30,6 +31,7 @@ public class Placeholder {
 
             int correctAnswers = scoreData.correctAnswers();
             int allAnswers = scoreData.totalAnswers();
+            int scores = scoreData.scores();
             double accuracy = allAnswers == 0 ? 0 : (double) correctAnswers / allAnswers * 100;
 
             return switch (key.toLowerCase()) {
@@ -37,6 +39,7 @@ public class Placeholder {
                 case "correct" -> String.valueOf(correctAnswers);
                 case "total" -> String.valueOf(allAnswers);
                 case "accuracy" -> String.format("%.2f", accuracy) + "%";
+                case "scores" -> String.valueOf(scores);
                 default -> null;
             };
         });

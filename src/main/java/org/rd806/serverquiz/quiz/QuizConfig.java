@@ -7,6 +7,7 @@ import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.rd806.serverquiz.ServerQuiz;
@@ -29,19 +30,19 @@ public class QuizConfig {
         this.maxNum = 0;
     }
 
-    // 初始化
+    /// 初始化
     public void initial() {
         StorageFactory factory = new StorageFactory();
         ServerQuiz.main.storage = factory.createQuizStorage(this.storageType, new DatabaseConfig());
         ServerQuiz.main.storage.setQuiz();
     }
 
-    // 创建计分表
+    /// 创建计分表
     public boolean createScoreBoard(String name, UUID uuid) {
         return ServerQuiz.main.storage.createScoreBoard(name, uuid);
     }
 
-    // 发送随机Quiz
+    /// 发送随机Quiz
     public void sendRandomQuiz() {
         Random random = new Random();
         int id = random.nextInt(maxNum) + 1;
@@ -50,40 +51,40 @@ public class QuizConfig {
         sendText();
     }
 
-    // 发送特定Quiz
+    /// 发送特定Quiz
     public void sendSpecificQuiz(int id) {
         ServerQuiz.main.quiz = getQuizById(id);
         sendText();
     }
 
-    // 获取特定Quiz
+    /// 获取特定Quiz
     public QuizEntry getQuizById(int id) {
         return ServerQuiz.main.storage.getQuizById(id);
     }
 
-    // 添加选择题
-    public boolean addChoiceQuiz(String question, String optionA, String optionB, String optionC, String optionD, String answer, String reward) {
-        return ServerQuiz.main.storage.addChoiceQuiz(question, optionA, optionB, optionC, optionD, answer, reward);
+    /// 添加选择题
+    public boolean addChoiceQuiz(String question, String optionA, String optionB, String optionC, String optionD, String answer, int score, String reward) {
+        return ServerQuiz.main.storage.addChoiceQuiz(question, optionA, optionB, optionC, optionD, answer, score, reward);
     }
 
-    // 添加填空题
-    public boolean addBlankQuiz(String question, String answer, String reward) {
-        return ServerQuiz.main.storage.addBlankQuiz(question, answer, reward);
+    /// 添加填空题
+    public boolean addBlankQuiz(String question, String answer, int score, String reward) {
+        return ServerQuiz.main.storage.addBlankQuiz(question, answer, score, reward);
     }
 
-    // 重新加载Quiz
+    /// 重新加载Quiz
     public void reload() {
         ServerQuiz.main.storage.setQuiz();
         send.cancel();
         sendQuiz();
     }
 
-    // 关闭Quiz系统
+    /// 关闭Quiz系统
     public void closeQuiz() {
         ServerQuiz.main.storage.closeQuiz();
     }
 
-    // 发送文本组件
+    /// 发送文本组件
     private void sendText() {
         // 创建可点击的文本组件
         TextComponent message = new TextComponent(ServerQuiz.config.getString(
@@ -135,17 +136,17 @@ public class QuizConfig {
         // 检查回答信息
         if (response.equals(ServerQuiz.main.quiz.getAnswer())) {
             player.sendMessage(ServerQuiz.config.getString("messages.correct", "You have solved the quiz!"));
-            // 赠送物品
-            switch (ServerQuiz.main.quiz.getReward().rewardType()) {
-                case Item -> {
-                    player.getInventory().addItem(ServerQuiz.main.quiz.getReward().item());
-                    player.closeInventory();
-                    player.sendMessage(ServerQuiz.config.getString("messages.sendReward", "Reward has been sent to you: ")
-                            + ServerQuiz.main.quiz.getReward().item().getType());
-                } case Vault -> {
-                    int amount = ServerQuiz.main.quiz.getReward().value();
-                    ServerQuiz.main.vault.addPlayerEconomy(player, amount);
-                }
+            // 赠送物品奖励
+            ItemStack reward = ServerQuiz.main.quiz.getReward();
+            if (reward != null) {
+                player.getInventory().addItem(reward);
+                player.sendMessage(ServerQuiz.config.getString("messages.sendReward", "Reward has been sent to you: ")
+                        + reward.getType());
+            }
+            // 赠送经济奖励，仅当 Vault 可用时发放
+            int score = ServerQuiz.main.quiz.getScore();
+            if (score > 0 && !ServerQuiz.main.vault.isEconomyNotAvailable()) {
+                ServerQuiz.main.vault.addPlayerEconomy(player, score);
             }
             player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
             // 设置回答正确者
@@ -156,8 +157,8 @@ public class QuizConfig {
             check = false;
         }
 
-        // 更新计分表
-        if (ServerQuiz.main.storage.updateScoreBoard(player.getName(), check)) {
+        // 更新计分表，答对时累加题目的分数
+        if (ServerQuiz.main.storage.updateScoreBoard(player.getName(), check, ServerQuiz.main.quiz.getScore())) {
             player.sendMessage(ServerQuiz.config.getString("messages.score", "Your score board has been updated!"));
         }
         player.closeInventory();
@@ -178,7 +179,8 @@ public class QuizConfig {
             }
             case Blank -> sender.sendMessage("Answer: " + quiz.getAnswer());
         }
-        sender.sendMessage("Reward: " + quiz.getReward().toString());
+        sender.sendMessage("Score: " + quiz.getScore());
+        sender.sendMessage("Reward: " + quiz.getRewardName());
         sender.sendMessage("-----------------------");
     }
 

@@ -33,6 +33,6 @@ public class Vault {
             return;
         }
         economy.depositPlayer(player, amount);
-        player.sendMessage(ServerQuiz.config.getString("messages.sendReward", "Reward has been sent to you: ") + amount);
+        player.sendMessage(ServerQuiz.config.getString("messages.sendEconomy", "Economy reward has been sent to you: ") + amount);
     }
 }

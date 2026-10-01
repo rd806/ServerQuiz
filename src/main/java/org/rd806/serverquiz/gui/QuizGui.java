@@ -10,7 +10,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.rd806.serverquiz.ServerQuiz;
 import org.rd806.serverquiz.quiz.QuizEntry;
-import org.rd806.serverquiz.quiz.RewardData;
 
 import java.util.*;
 
@@ -24,13 +23,13 @@ public class QuizGui {
         quizMenu = Bukkit.createInventory(null, 45, ServerQuiz.config.getString("gui.title", "Quiz Menu"));
     }
 
-    // 打乱选项
+    /// 打乱选项
     private void shuffle(QuizEntry entry) {
         List<QuizEntry.QuizOption> options = entry.getOptions();
         Collections.shuffle(options);
     }
 
-    // Quiz界面
+    /// Quiz界面
     public Inventory createQuizMenu(Player player) {
         quizMenu.clear();
         entry = ServerQuiz.main.quiz;
@@ -42,10 +41,13 @@ public class QuizGui {
         AddItemToMenu(quizMenu, 4, Material.PAPER,
                 "§r" + ServerQuiz.config.getString("gui.question", "Question"),
                 "§r§b" + entry.getQuestion());
-        // 设置奖品
-        AddItemToMenu(quizMenu, 8, entry.getReward().item().getType(),
+        // 设置奖品与分数
+        ItemStack reward = entry.getReward();
+        Material rewardMaterial = reward == null ? Material.BARRIER : reward.getType();
+        AddItemToMenu(quizMenu, 8, rewardMaterial,
                 "§r" + ServerQuiz.config.getString("gui.reward", "Reward"),
-                "§r§b" + RewardData.getRewardData(entry));
+                "§r§b" + entry.getRewardName(),
+                "§r§b" + ServerQuiz.config.getString("gui.score", "Score") + ": " + entry.getScore());
 
         // 设置回答区域
         switch (entry.getType()) {
@@ -66,8 +68,9 @@ public class QuizGui {
         return quizMenu;
     }
 
-    // 向菜单中添加物品
-    // String... 类型可以一次性添加多个字符串，但必须作为最后一个参数
+    /// 向菜单中添加物品
+    ///
+    /// String... 类型可以一次性添加多个字符串，但必须作为最后一个参数
     private void AddItemToMenu(Inventory menu, int slot, Material material, String itemName, String... itemLore) {
         ItemStack itemStack = new ItemStack(material);
         ItemMeta itemMeta = itemStack.getItemMeta();
@@ -85,7 +88,7 @@ public class QuizGui {
         menu.setItem(slot, itemStack);
     }
 
-    // 创建玩家头像
+    /// 创建玩家头像
     private ItemStack createPlayerHead(Player player) {
         ItemStack head = new ItemStack(Material.PLAYER_HEAD);
         SkullMeta skullMeta = (SkullMeta) head.getItemMeta();
@@ -93,7 +96,7 @@ public class QuizGui {
         // 获取计分表信息
         String title = ServerQuiz.config.getString("gui.scoreBoard.title", "Your quiz score board");
         List<String> lines = ServerQuiz.config.getStringList("gui.scoreBoard.lore");
-        lines = ServerQuiz.main.placeholder.resolve(player, lines);
+        lines = ServerQuiz.main.placeHolder.resolve(player, lines);
 
         if (skullMeta != null) {
             skullMeta.setOwningPlayer(player);
@@ -104,7 +107,7 @@ public class QuizGui {
         return head;
     }
 
-    // 选择题界面
+    /// 选择题界面
     private void multipleChoices() {
         // 打乱选项
         if (ServerQuiz.config.getBoolean("gui.choice.random", false)) {
@@ -125,12 +128,13 @@ public class QuizGui {
                 "§r§b" + entry.getOptions().get(3).text);
     }
 
-    // 填空题界面
+    /// 填空题界面
     private void fillBlank() {
         AddItemToMenu(quizMenu, 22, Material.ANVIL,
                 ServerQuiz.config.getString("gui.blank.answerSheet", "§r" + "Answer Sheet"));
     }
 
+    /// 创建界面
     public void createGUI(Player player) {
         new AnvilGUI.Builder()
                 .onClick((slot, stateSnapshot) -> {

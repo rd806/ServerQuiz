@@ -1,6 +1,6 @@
 package org.rd806.serverquiz.storage.database;
 
-import org.rd806.serverquiz.quiz.RewardData;
+import org.rd806.serverquiz.quiz.QuizType;
 import org.rd806.serverquiz.quiz.ScoreData;
 import org.rd806.serverquiz.ServerQuiz;
 import org.rd806.serverquiz.storage.QuizStorage;
@@ -28,7 +28,7 @@ public class SqlControl implements QuizStorage {
         this.maxId = 0;
     }
 
-    // 初始化Quiz列表
+    /// 初始化Quiz列表
     @Override
     public void setQuiz() {
         String sql1 = "SELECT MAX(id) FROM choice";
@@ -55,7 +55,7 @@ public class SqlControl implements QuizStorage {
         }
     }
 
-    // 根据id获取对应的Quiz
+    /// 根据id获取对应的Quiz
     @Override
     public QuizEntry getQuizById(int id) {
         String sql;
@@ -67,13 +67,13 @@ public class SqlControl implements QuizStorage {
 
         if (id <= choiceId) {
             sql = """
-                SELECT 'choice' AS type, id, question, option_a, option_b, option_c, option_d, answer, reward
+                SELECT 'choice' AS type, id, question, option_a, option_b, option_c, option_d, answer, score, reward
                 FROM choice
                 WHERE id = ?
                 """;
         } else {
             sql = """
-                SELECT 'blank' AS type, id, question, NULL AS option_a, NULL AS option_b, NULL AS option_c, NULL AS option_d, answer, reward
+                SELECT 'blank' AS type, id, question, NULL AS option_a, NULL AS option_b, NULL AS option_c, NULL AS option_d, answer, score, reward
                 FROM blank
                 WHERE id = ?
                 """;
@@ -97,22 +97,23 @@ public class SqlControl implements QuizStorage {
                 temp.setQuestion(resultSet.getString("question"));
                 temp.setAnswer(resultSet.getString("answer"));
                 // 设置奖励
-                String rewardName = resultSet.getString("reward");
-                RewardData.setRewardData(rewardName, temp);
+                temp.setScore(resultSet.getInt("score"));
+                temp.setReward(resultSet.getString("reward"));
+                // 设置类型
                 String type = resultSet.getString("type");
-                if (type.equals("choice")) {
-                    // 设置选项
-                    temp.setType(QuizEntry.QuizType.Choice);
-                    List<QuizEntry.QuizOption> options = new ArrayList<>();
-                    options.add(new QuizEntry.QuizOption("A", resultSet.getString("option_a")));
-                    options.add(new QuizEntry.QuizOption("B", resultSet.getString("option_b")));
-                    options.add(new QuizEntry.QuizOption("C", resultSet.getString("option_c")));
-                    options.add(new QuizEntry.QuizOption("D", resultSet.getString("option_d")));
-                    temp.setOptions(options);
-                } else {
-                    temp.setType(QuizEntry.QuizType.Blank);
+                switch (type) {
+                    case "choice" -> {
+                        // 设置选项
+                        temp.setType(QuizType.Choice);
+                        List<QuizEntry.QuizOption> options = new ArrayList<>();
+                        options.add(new QuizEntry.QuizOption("A", resultSet.getString("option_a")));
+                        options.add(new QuizEntry.QuizOption("B", resultSet.getString("option_b")));
+                        options.add(new QuizEntry.QuizOption("C", resultSet.getString("option_c")));
+                        options.add(new QuizEntry.QuizOption("D", resultSet.getString("option_d")));
+                        temp.setOptions(options);
+                    }
+                    case "blank" -> temp.setType(QuizType.Blank);
                 }
-
                 return temp;
             }
         } catch (SQLException e) {
@@ -124,7 +125,7 @@ public class SqlControl implements QuizStorage {
     @Override
     public boolean createScoreBoard(String name, UUID uuid) {
         String sql = """
-              INSERT INTO score (name, uuid, correct_answers, all_answers) VALUES (?, ?, 0, 0) ON DUPLICATE KEY UPDATE id = id;
+              INSERT INTO score (name, uuid, correct_answers, all_answers, scores) VALUES (?, ?, 0, 0, 0) ON DUPLICATE KEY UPDATE id = id;
               """;
 
         try (Connection connection = dataSourceManager.getConnection();
@@ -145,9 +146,9 @@ public class SqlControl implements QuizStorage {
     // 获取玩家分数
     @Override
     public ScoreData getPlayerScore(String name) {
-        ScoreData score = new ScoreData(0, 0);
+        ScoreData score = new ScoreData(0, 0, 0);
         String sql = """
-                SELECT correct_answers, all_answers FROM score WHERE name = ?;
+                SELECT correct_answers, all_answers, scores FROM score WHERE name = ?;
                 """;
 
         try (Connection connection = dataSourceManager.getConnection();
@@ -159,7 +160,8 @@ public class SqlControl implements QuizStorage {
             if (resultSet.next()) {
                 int correctAnswers = resultSet.getInt("correct_answers");
                 int allAnswers = resultSet.getInt("all_answers");
-                return new ScoreData(correctAnswers, allAnswers);
+                int scores = resultSet.getInt("scores");
+                return new ScoreData(correctAnswers, allAnswers, scores);
             }
 
             return score;
@@ -171,9 +173,9 @@ public class SqlControl implements QuizStorage {
     }
 
     @Override
-    public boolean addChoiceQuiz(String question, String optionA, String optionB, String optionC, String optionD, String answer, String reward) {
+    public boolean addChoiceQuiz(String question, String optionA, String optionB, String optionC, String optionD, String answer, int score, String reward) {
         String sql = """
-               INSERT INTO choice(question, option_a, option_b, option_c, option_d, answer, reward) VALUES (?, ?, ?, ?, ?, ?, ?);
+               INSERT INTO choice(question, option_a, option_b, option_c, option_d, answer, score, reward) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
                """;
 
         try (Connection connection = dataSourceManager.getConnection();
@@ -185,7 +187,8 @@ public class SqlControl implements QuizStorage {
             statement.setString(4, optionC);
             statement.setString(5, optionD);
             statement.setString(6, answer);
-            statement.setString(7, reward);
+            statement.setInt(7, score);
+            statement.setString(8, reward);
 
             int result = statement.executeUpdate();
             return (result > 0);
@@ -197,9 +200,9 @@ public class SqlControl implements QuizStorage {
     }
 
     @Override
-    public boolean addBlankQuiz(String question, String answer, String reward) {
+    public boolean addBlankQuiz(String question, String answer, int score, String reward) {
         String sql = """
-               INSERT INTO blank(question, answer, reward) VALUES (?, ?, ?);
+               INSERT INTO blank(question, answer, score, reward) VALUES (?, ?, ?, ?);
                """;
 
         try (Connection connection = dataSourceManager.getConnection();
@@ -207,7 +210,8 @@ public class SqlControl implements QuizStorage {
 
             statement.setString(1, question);
             statement.setString(2, answer);
-            statement.setString(3, reward);
+            statement.setInt(3, score);
+            statement.setString(4, reward);
 
             int result = statement.executeUpdate();
             return (result > 0);
@@ -220,13 +224,13 @@ public class SqlControl implements QuizStorage {
 
     // 更新计分表
     @Override
-    public boolean updateScoreBoard(String name, boolean check) {
+    public boolean updateScoreBoard(String name, boolean check, int score) {
         String sql;
 
         if (check) {
             sql = """
                   UPDATE score
-                  SET correct_answers = correct_answers+1, all_answers = all_answers+1
+                  SET correct_answers = correct_answers+1, all_answers = all_answers+1, scores = scores+?
                   WHERE name = ?;
                  """;
         } else {
@@ -240,7 +244,12 @@ public class SqlControl implements QuizStorage {
         try (Connection connection = dataSourceManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
-            statement.setString(1, name);
+            if (check) {
+                statement.setInt(1, score);
+                statement.setString(2, name);
+            } else {
+                statement.setString(1, name);
+            }
 
             int result = statement.executeUpdate();
             return (result > 0);

@@ -138,8 +138,13 @@ public class QuizCommand implements CommandExecutor {
                         target = args[2];
                     }
                     ScoreData scoreData = ServerQuiz.main.quizConfig.getScoreData(target);
+                    if (scoreData == null) {
+                        sender.sendMessage("§cNo score board found for " + target);
+                        return false;
+                    }
                     sender.sendMessage(target + "'s correct answers is " + scoreData.correctAnswers());
                     sender.sendMessage(target + "'s total answers is " + scoreData.totalAnswers());
+                    sender.sendMessage(target + "'s scores is " + scoreData.scores());
                     return true;
                 }
                 default -> {
@@ -176,14 +181,25 @@ public class QuizCommand implements CommandExecutor {
             if (args[1].equals("choice")) {
                 switch (args[2]) {
                     case "insert" -> {
+                        if (args.length < 11) {
+                            sender.sendMessage("Usage: /quiz edit choice insert <question> <optionA> <optionB> <optionC> <optionD> <answer> <score> <reward>");
+                            return false;
+                        }
                         String question = args[3];
                         String optionA = args[4];
                         String optionB = args[5];
                         String optionC = args[6];
                         String optionD = args[7];
                         String answer = args[8];
-                        String reward = args[9];
-                        if (ServerQuiz.main.quizConfig.addChoiceQuiz(question, optionA, optionB, optionC, optionD, answer, reward)) {
+                        int score;
+                        try {
+                            score = Integer.parseInt(args[9]);
+                        } catch (NumberFormatException e) {
+                            sender.sendMessage("§cThe score must be a number: " + args[9]);
+                            return false;
+                        }
+                        String reward = args[10];
+                        if (ServerQuiz.main.quizConfig.addChoiceQuiz(question, optionA, optionB, optionC, optionD, answer, score, reward)) {
                             sender.sendMessage("The choice quiz has been added!");
                             sender.sendMessage("Please use /quiz initial to enable the change");
                             return true;
@@ -199,10 +215,21 @@ public class QuizCommand implements CommandExecutor {
             if (args[1].equals("blank")) {
                 switch (args[2]) {
                     case "insert" -> {
+                        if (args.length < 7) {
+                            sender.sendMessage("Usage: /quiz edit blank insert <question> <answer> <score> <reward>");
+                            return false;
+                        }
                         String question = args[3];
                         String answer = args[4];
-                        String reward = args[5];
-                        if (ServerQuiz.main.quizConfig.addBlankQuiz(question, answer, reward)) {
+                        int score;
+                        try {
+                            score = Integer.parseInt(args[5]);
+                        } catch (NumberFormatException e) {
+                            sender.sendMessage("§cThe score must be a number: " + args[5]);
+                            return false;
+                        }
+                        String reward = args[6];
+                        if (ServerQuiz.main.quizConfig.addBlankQuiz(question, answer, score, reward)) {
                             sender.sendMessage("The blank quiz has been added!");
                             sender.sendMessage("Please use /quiz initial to enable the change");
                             return true;

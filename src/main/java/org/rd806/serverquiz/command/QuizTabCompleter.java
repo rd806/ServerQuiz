@@ -44,7 +44,7 @@ public class QuizTabCompleter implements TabCompleter {
                 if (args[1].equals("choice")) {
                     switch (args[2]) {
                         case "insert":
-                            addCompletions(completions, "<question> <optionA> <optionB> <optionC> <optionD> <answer> <reward>");
+                            addCompletions(completions, "<question> <optionA> <optionB> <optionC> <optionD> <answer> <score> <reward>");
                             return completions;
                         case "alter":
                         case "delete":
@@ -52,7 +52,7 @@ public class QuizTabCompleter implements TabCompleter {
                 } else if (args[1].equals("blank")) {
                     switch (args[2]) {
                         case "insert":
-                            addCompletions(completions, "<question> <answer> <reward>");
+                            addCompletions(completions, "<question> <answer> <score> <reward>");
                             return completions;
                         case "alter":
                         case "delete":

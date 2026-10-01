@@ -6,7 +6,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.rd806.serverquiz.ServerQuiz;
 import org.rd806.serverquiz.quiz.ScoreData;
 
-// 使用 PlaceholderAPI 扩展
+/// 使用 PlaceholderAPI 扩展
 public class Expansion extends PlaceholderExpansion {
 
     private final ServerQuiz plugin;
@@ -50,6 +50,7 @@ public class Expansion extends PlaceholderExpansion {
         ScoreData scoreData = ServerQuiz.main.quizConfig.getScoreData(player.getName());
         int correctAnswers = scoreData.correctAnswers();
         int allAnswers = scoreData.totalAnswers();
+        int scores = scoreData.scores();
         double accuracy = allAnswers == 0 ? 0 : (double) correctAnswers / allAnswers * 100;
 
         if (params.equalsIgnoreCase("name")) {
@@ -66,6 +67,10 @@ public class Expansion extends PlaceholderExpansion {
 
         if (params.equalsIgnoreCase("accuracy")) {
             return String.format("%.2f", accuracy) + "%";
+        }
+
+        if (params.equalsIgnoreCase("scores")) {
+            return String.valueOf(scores);
         }
 
         return null;
