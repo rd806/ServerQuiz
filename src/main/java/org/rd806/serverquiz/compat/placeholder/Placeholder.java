@@ -1,10 +1,10 @@
-package org.rd806.serverquiz.placeholder;
+package org.rd806.serverquiz.compat.placeholder;
 
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.rd806.serverquiz.ServerQuiz;
-import org.rd806.serverquiz.quiz.content.ScoreData;
+import org.rd806.serverquiz.quiz.ScoreData;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -9,13 +9,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.rd806.serverquiz.ServerQuiz;
-import org.rd806.serverquiz.quiz.content.QuizEntry;
-import org.rd806.serverquiz.quiz.content.RewardData;
+import org.rd806.serverquiz.quiz.QuizEntry;
+import org.rd806.serverquiz.quiz.RewardData;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class QuizGui {
 
@@ -46,16 +43,9 @@ public class QuizGui {
                 "§r" + ServerQuiz.config.getString("gui.question", "Question"),
                 "§r§b" + entry.getQuestion());
         // 设置奖品
-        // 检查是否为数字
-        if (entry.getReward().rewardType() == RewardData.RewardType.Item) {
-            AddItemToMenu(quizMenu, 8, entry.getReward().item().getType(),
-                    "§r" + ServerQuiz.config.getString("gui.reward", "Reward"),
-                    "§r§b" + entry.getReward().item().getType());
-        } else {
-            AddItemToMenu(quizMenu, 8, Material.EMERALD,
-                    "§r" + ServerQuiz.config.getString("gui.reward", "Reward"),
-                    "§r§b" + entry.getReward().value());
-        }
+        AddItemToMenu(quizMenu, 8, entry.getReward().item().getType(),
+                "§r" + ServerQuiz.config.getString("gui.reward", "Reward"),
+                "§r§b" + RewardData.getRewardData(entry));
 
         // 设置回答区域
         switch (entry.getType()) {

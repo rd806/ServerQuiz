@@ -1,9 +1,11 @@
-package org.rd806.serverquiz.quiz.storage;
+package org.rd806.serverquiz.storage;
 
 import org.rd806.serverquiz.ServerQuiz;
-import org.rd806.serverquiz.database.DataSourceManager;
-import org.rd806.serverquiz.database.DatabaseConfig;
-import org.rd806.serverquiz.database.DatabaseInitial;
+import org.rd806.serverquiz.storage.database.DataSourceManager;
+import org.rd806.serverquiz.storage.database.DatabaseConfig;
+import org.rd806.serverquiz.storage.database.DatabaseInitial;
+import org.rd806.serverquiz.storage.database.SqlControl;
+import org.rd806.serverquiz.storage.yaml.YamlControl;
 
 public class StorageFactory {
 

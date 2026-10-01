@@ -1,4 +1,4 @@
-package org.rd806.serverquiz.database;
+package org.rd806.serverquiz.storage.database;
 
 import org.rd806.serverquiz.ServerQuiz;
 

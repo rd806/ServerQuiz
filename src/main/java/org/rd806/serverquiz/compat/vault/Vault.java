@@ -1,9 +1,10 @@
-package org.rd806.serverquiz;
+package org.rd806.serverquiz.compat.vault;
 
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
+import org.rd806.serverquiz.ServerQuiz;
 
 public class Vault {
     public Economy economy;

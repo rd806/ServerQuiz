@@ -6,12 +6,13 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.rd806.serverquiz.command.QuizCommand;
 import org.rd806.serverquiz.command.QuizTabCompleter;
+import org.rd806.serverquiz.compat.vault.Vault;
 import org.rd806.serverquiz.gui.QuizEvent;
 import org.rd806.serverquiz.gui.QuizGui;
-import org.rd806.serverquiz.placeholder.Placeholder;
+import org.rd806.serverquiz.compat.placeholder.Placeholder;
 import org.rd806.serverquiz.quiz.QuizConfig;
-import org.rd806.serverquiz.quiz.content.QuizEntry;
-import org.rd806.serverquiz.quiz.storage.QuizStorage;
+import org.rd806.serverquiz.quiz.QuizEntry;
+import org.rd806.serverquiz.storage.QuizStorage;
 
 import java.util.Objects;
 import java.util.logging.Logger;

@@ -1,10 +1,10 @@
-package org.rd806.serverquiz.quiz.storage;
+package org.rd806.serverquiz.storage.database;
 
-import org.rd806.serverquiz.quiz.content.RewardData;
-import org.rd806.serverquiz.quiz.content.ScoreData;
+import org.rd806.serverquiz.quiz.RewardData;
+import org.rd806.serverquiz.quiz.ScoreData;
 import org.rd806.serverquiz.ServerQuiz;
-import org.rd806.serverquiz.database.DataSourceManager;
-import org.rd806.serverquiz.quiz.content.QuizEntry;
+import org.rd806.serverquiz.storage.QuizStorage;
+import org.rd806.serverquiz.quiz.QuizEntry;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

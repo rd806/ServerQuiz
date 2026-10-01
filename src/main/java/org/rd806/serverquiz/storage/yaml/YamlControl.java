@@ -1,11 +1,12 @@
-package org.rd806.serverquiz.quiz.storage;
+package org.rd806.serverquiz.storage.yaml;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.rd806.serverquiz.quiz.content.RewardData;
-import org.rd806.serverquiz.quiz.content.ScoreData;
+import org.rd806.serverquiz.quiz.RewardData;
+import org.rd806.serverquiz.quiz.ScoreData;
 import org.rd806.serverquiz.ServerQuiz;
-import org.rd806.serverquiz.quiz.content.QuizEntry;
+import org.rd806.serverquiz.quiz.QuizEntry;
+import org.rd806.serverquiz.storage.QuizStorage;
 
 import java.io.File;
 import java.io.IOException;

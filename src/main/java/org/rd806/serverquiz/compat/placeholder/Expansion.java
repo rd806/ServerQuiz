@@ -1,10 +1,10 @@
-package org.rd806.serverquiz.placeholder;
+package org.rd806.serverquiz.compat.placeholder;
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.OfflinePlayer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.rd806.serverquiz.ServerQuiz;
-import org.rd806.serverquiz.quiz.content.ScoreData;
+import org.rd806.serverquiz.quiz.ScoreData;
 
 // 使用 PlaceholderAPI 扩展
 public class Expansion extends PlaceholderExpansion {

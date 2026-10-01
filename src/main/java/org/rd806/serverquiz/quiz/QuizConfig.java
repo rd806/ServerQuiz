@@ -9,11 +9,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
-import org.rd806.serverquiz.quiz.content.ScoreData;
 import org.rd806.serverquiz.ServerQuiz;
-import org.rd806.serverquiz.database.DatabaseConfig;
-import org.rd806.serverquiz.quiz.content.QuizEntry;
-import org.rd806.serverquiz.quiz.storage.StorageFactory;
+import org.rd806.serverquiz.storage.database.DatabaseConfig;
+import org.rd806.serverquiz.storage.StorageFactory;
 
 import java.util.Random;
 import java.util.UUID;

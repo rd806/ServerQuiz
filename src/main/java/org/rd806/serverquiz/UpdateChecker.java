@@ -57,12 +57,11 @@ public class UpdateChecker {
             connection.setConnectTimeout(5000);
             connection.setReadTimeout(5000);
 
-            InputStream inputStream = connection.getInputStream();
-            Scanner scanner = new Scanner(inputStream).useDelimiter("\\A");
-            String json = scanner.hasNext() ? scanner.next() : "";
-            scanner.close();
-
-            return extractVersion(json);
+            try (InputStream inputStream = connection.getInputStream();
+                 Scanner scanner = new Scanner(inputStream).useDelimiter("\\A")) {
+                String json = scanner.hasNext() ? scanner.next() : "";
+                return extractVersion(json);
+            }
 
         } catch (Exception e) {
             ServerQuiz.logger.warning(e.getMessage());
@@ -74,12 +73,9 @@ public class UpdateChecker {
     private static String getVersionFromGitHub() {
         String url = "https://api.github.com/repos/rd806/ServerQuiz/releases/latest";
 
-        try {
-            InputStream inputStream = new URL(url).openStream();
-            Scanner scanner = new Scanner(inputStream).useDelimiter("\\A");
+        try (InputStream inputStream = new URL(url).openStream();
+             Scanner scanner = new Scanner(inputStream).useDelimiter("\\A")) {
             String json = scanner.hasNext() ? scanner.next() : "";
-            scanner.close();
-
             return json.split("\"tag_name\":\"")[1].split("\"")[0];
         } catch (IOException e) {
             ServerQuiz.logger.warning(e.getMessage());

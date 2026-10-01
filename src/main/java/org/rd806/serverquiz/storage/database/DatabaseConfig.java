@@ -1,4 +1,4 @@
-package org.rd806.serverquiz.database;
+package org.rd806.serverquiz.storage.database;
 
 public class DatabaseConfig {
     // 网络参数
@@ -39,7 +39,7 @@ public class DatabaseConfig {
     public void setUseSSL(boolean useSSL) { this.useSSL = useSSL; }
 
     public String getJdbcUrl() {
-        return String.format("jdbc:mysql://%s:%d/%s?useSSL=%s&serverTimezone=UTC",
+        return String.format("jdbc:mysql://%s:%d/%s?allowPublicKeyRetrieval=true&useSSL=%s&serverTimezone=UTC",
                 host, port, database, useSSL);
     }
 

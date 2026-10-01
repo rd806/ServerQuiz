@@ -1,4 +1,4 @@
-package org.rd806.serverquiz.quiz.content;
+package org.rd806.serverquiz.quiz;
 
 import java.util.*;
 
