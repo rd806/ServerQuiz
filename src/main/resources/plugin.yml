@@ -1,5 +1,5 @@
 name: ServerQuiz
-version: '1.1.3'
+version: '2.0.0'
 main: org.rd806.serverquiz.ServerQuiz
 api-version: '1.20'
 softdepend: [ Vault, PlaceholderAPI ]

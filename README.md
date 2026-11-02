@@ -14,7 +14,11 @@ The Q&A system has two ways to storage data: YAML, MYSQL.
 
 > Since plugin version 1.1.0, fill-in-the-blanks quiz has been supported!
 
-If you choose `YAML` type, please set your quiz at `Quiz.yml` in the format below:
+If you choose `YAML` type, quizzes are stored as one file per bank under `plugins/ServerQuiz/quiz/`.
+The file names come from `config.table` in `config.yml`, for example `choice` loads `quiz/choice.yml`.
+Each file may contain a `Choice` section, a `Blank` section, or both.
+
+`quiz/choice.yml`:
 
 ```yaml
 Choice:
@@ -25,21 +29,25 @@ Choice:
       C: "240e:360:6f43:500:d14d:dbd0:97:b3b3"
       D: "127.256.3.34"
     Answer: D
+    Score: 10
     Reward: DIAMOND
-  - Question: "Which of the following file formats are not considered compressed files"
-    Options:
-      A: "zip"
-      B: "rar"
-      C: "7z"
-      D: "png"
-    Answer: D
-    Reward: DIAMOND
+```
 
+`quiz/blank.yml`:
+
+```yaml
 Blank:
   - Question: "1+1=?"
     Answer: "2"
+    Score: 10
     Reward: DIAMOND
 ```
+
+> Upgrading from an older version? The plugin automatically splits the old `Quiz.yml` into
+> `quiz/choice.yml` and `quiz/blank.yml`, then renames the original to `Quiz.yml.migrated`.
+
+> For a multiple-choice question, write all correct labels separated by commas, for example `Answer: "A,C"`.
+> The order of the labels does not matter, and options are still shuffled randomly on the answer screen.
 
 > Since version 1.1.2, you can set `Reward` a number if you have Vault based plugins. 
 > 
@@ -55,7 +63,21 @@ config:
   name: { your name }
   password: { your password }
   database: serverquiz
+  # Any number of quiz tables in the same database
+  table:
+    - choice
+    - blank
+    - history
 ```
+
+You can load any number of quiz banks. With `YAML`, each entry in `table` is a file under `quiz/`; with `MYSQL`, each entry is a table in the same database. Banks are read in the listed order and numbered sequentially. For MYSQL, a table is recognized by its columns:
+
+- A table with `option_a` ~ `option_d` is loaded as a **choice** bank.
+- A table without those columns is loaded as a **blank** bank.
+- Every table needs at least `id`, `question`, `answer`, `score` and `reward`; missing `score`/`reward` columns are added automatically.
+- Tables that do not exist or have an incompatible schema are skipped with a warning.
+
+Adding, removing or editing tables takes effect with `/quiz reload`, no server restart needed.
 
 The configuration file has been updated! You can easily set some configurations now. Other config options is shown below:
 

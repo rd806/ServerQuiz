@@ -5,6 +5,7 @@ Choice:
       B: "192.168.0.1"
       C: "240e:360:6f43:500:d14d:dbd0:97:b3b3"
       D: "127.256.3.34"
+    # 单选题填一个标签；多选题用逗号分隔，例如 "A,C"（顺序无关）
     Answer: D
     Score: 10
     Reward: DIAMOND
@@ -15,11 +16,5 @@ Choice:
       C: "7z"
       D: "png"
     Answer: D
-    Score: 10
-    Reward: DIAMOND
-
-Blank:
-  - Question: "1+1=?"
-    Answer: "2"
     Score: 10
     Reward: DIAMOND

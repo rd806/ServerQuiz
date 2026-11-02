@@ -7,117 +7,228 @@ import org.rd806.serverquiz.storage.QuizStorage;
 import org.rd806.serverquiz.quiz.QuizEntry;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class SqlControl implements QuizStorage {
 
+    /// 表名仅允许字母、数字和下划线，避免拼接 SQL 时被注入
+    private static final String TABLE_NAME_PATTERN = "[A-Za-z0-9_]+";
+
     private final DataSourceManager dataSourceManager;
-    private int choiceId;
-    private int blankId;
+    /// config.yml 中配置并成功加载的题库表
+    private final List<QuizTable> tables;
     private int maxId;
 
     public SqlControl(DataSourceManager dataSourceManager) {
         this.dataSourceManager = dataSourceManager;
-        this.choiceId = 0;
-        this.blankId = 0;
+        this.tables = new ArrayList<>();
         this.maxId = 0;
+    }
+
+    /// 一个题库表：表内 id 列表与它在全局编号中的起始位置
+    private static class QuizTable {
+        private final String name;
+        private final QuizType type;
+        private final List<Integer> ids;
+        /// 该表在全局编号中的起始下标（0 开始）
+        private int offset;
+
+        private QuizTable(String name, QuizType type, List<Integer> ids) {
+            this.name = name;
+            this.type = type;
+            this.ids = ids;
+        }
     }
 
     /// 初始化Quiz列表
     @Override
     public void setQuiz() {
-        String sql1 = "SELECT MAX(id) FROM choice";
-        String sql2 = "SELECT MAX(id) FROM blank";
+        tables.clear();
+        maxId = 0;
 
-        try(Connection connection = dataSourceManager.getConnection();
-            PreparedStatement statement1 = connection.prepareStatement(sql1);
-            PreparedStatement statement2 = connection.prepareStatement(sql2);
-            ResultSet resultSet1 = statement1.executeQuery();
-            ResultSet resultSet2 = statement2.executeQuery()) {
-
-            if (resultSet1.next() && resultSet2.next()) {
-                this.choiceId = resultSet1.getInt(1);
-                this.blankId = resultSet2.getInt(1);
-                this.maxId = choiceId + blankId;
-                ServerQuiz.main.quizConfig.setMaxNum(this.maxId);
-            }
-
-            ServerQuiz.logger.info("Quiz list initialized!");
-            ServerQuiz.logger.info("Quiz number: " + this.maxId);
-
-        } catch (SQLException e) {
-            ServerQuiz.logger.warning("Quiz list initialized failed!" + e.getMessage());
+        List<String> tableNames = ServerQuiz.config.getStringList("config.table");
+        // 兼容旧配置：未配置 table 时使用默认的两张表
+        if (tableNames.isEmpty()) {
+            tableNames = List.of("choice", "blank");
         }
+
+        try (Connection connection = dataSourceManager.getConnection()) {
+            // 为热插拔新增的表补齐列（score/reward），并扩展 answer 以支持多选题
+            new DatabaseInitial(dataSourceManager).migrateConfiguredTables(connection);
+
+            Set<String> loaded = new HashSet<>();
+            for (String rawName : tableNames) {
+                String name = rawName == null ? "" : rawName.trim();
+                if (name.isEmpty() || !name.matches(TABLE_NAME_PATTERN)) {
+                    ServerQuiz.logger.warning("Invalid quiz table name: " + rawName);
+                    continue;
+                }
+                // MySQL 表名在部分系统上不区分大小写，按小写去重
+                if (!loaded.add(name.toLowerCase(Locale.ROOT))) continue;
+
+                // 使用数据库中的实际表名，避免大小写差异导致查询失败
+                String actual = getActualTableName(connection, name);
+                if (actual == null) {
+                    ServerQuiz.logger.warning("Quiz table [" + name + "] does not exist, skipped!");
+                    continue;
+                }
+
+                Map<String, Integer> columns = getColumns(connection, actual);
+                QuizType type = detectTableType(columns);
+                if (type == null) {
+                    ServerQuiz.logger.warning("Quiz table [" + actual + "] has an incompatible schema, skipped!");
+                    continue;
+                }
+
+                try {
+                    List<Integer> ids = loadIds(connection, actual);
+                    QuizTable table = new QuizTable(actual, type, ids);
+                    table.offset = maxId;
+                    tables.add(table);
+                    maxId += ids.size();
+                    ServerQuiz.logger.info("Loaded quiz table [" + actual + "] (" + type + "): " + ids.size() + " quiz(zes)");
+                } catch (SQLException e) {
+                    // 单张表加载失败不影响其他题库
+                    ServerQuiz.logger.warning("Failed to load quiz table [" + actual + "]: " + e.getMessage());
+                }
+            }
+        } catch (SQLException e) {
+            ServerQuiz.logger.warning("Quiz list initialized failed! " + e.getMessage());
+        }
+
+        ServerQuiz.main.quizConfig.setMaxNum(this.maxId);
+        ServerQuiz.logger.info("Quiz list initialized!");
+        ServerQuiz.logger.info("Quiz number: " + this.maxId);
+    }
+
+    /// 根据表结构推断题库类型：包含 option_a ~ option_d 视为选择题表，否则视为填空题表
+    private QuizType detectTableType(Map<String, Integer> columns) {
+        if (!columns.containsKey("id") || !columns.containsKey("question") || !columns.containsKey("answer")) return null;
+
+        if (columns.containsKey("option_a")) {
+            boolean completeChoice = columns.containsKey("option_b")
+                    && columns.containsKey("option_c")
+                    && columns.containsKey("option_d");
+            return completeChoice ? QuizType.Choice : null;
+        }
+        return QuizType.Blank;
+    }
+
+    /// 读取表内所有 id（按升序），用于建立全局编号到表内 id 的映射
+    private List<Integer> loadIds(Connection connection, String table) throws SQLException {
+        List<Integer> ids = new ArrayList<>();
+        String sql = "SELECT id FROM `" + table + "` ORDER BY id";
+        try (PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+            while (resultSet.next()) {
+                ids.add(resultSet.getInt("id"));
+            }
+        }
+        return ids;
+    }
+
+    /// 获取数据库中实际存在的表名（忽略大小写），不存在时返回 null
+    private String getActualTableName(Connection connection, String table) throws SQLException {
+        DatabaseMetaData metaData = connection.getMetaData();
+        try (ResultSet resultSet = metaData.getTables(connection.getCatalog(), null, null, new String[]{"TABLE"})) {
+            while (resultSet.next()) {
+                String actual = resultSet.getString("TABLE_NAME");
+                if (actual.equalsIgnoreCase(table)) return actual;
+            }
+        }
+        return null;
+    }
+
+    /// 读取表的所有列及列长度，表不存在时返回空 Map
+    private Map<String, Integer> getColumns(Connection connection, String table) throws SQLException {
+        Map<String, Integer> columns = new LinkedHashMap<>();
+        DatabaseMetaData metaData = connection.getMetaData();
+        try (ResultSet resultSet = metaData.getColumns(connection.getCatalog(), null, null, null)) {
+            while (resultSet.next()) {
+                if (!resultSet.getString("TABLE_NAME").equalsIgnoreCase(table)) continue;
+                columns.put(resultSet.getString("COLUMN_NAME").toLowerCase(Locale.ROOT),
+                        resultSet.getInt("COLUMN_SIZE"));
+            }
+        }
+        return columns;
+    }
+
+    /// 根据全局下标找到所属题库表
+    private QuizTable findTable(int globalIndex) {
+        for (QuizTable table : tables) {
+            if (globalIndex >= table.offset && globalIndex < table.offset + table.ids.size()) {
+                return table;
+            }
+        }
+        return null;
+    }
+
+    /// 根据全局下标获取表内 id
+    private int findLocalId(QuizTable table, int globalIndex) {
+        return table.ids.get(globalIndex - table.offset);
+    }
+
+    /// 查找指定类型的第一个题库表
+    private QuizTable findFirstTable(QuizType type) {
+        for (QuizTable table : tables) {
+            if (table.type == type) return table;
+        }
+        return null;
     }
 
     /// 根据id获取对应的Quiz
     @Override
     public QuizEntry getQuizById(int id) {
-        String sql;
-
         if (id < 1 || id > maxId) {
             ServerQuiz.logger.warning("Quiz id out of range!");
             return null;
         }
 
-        if (id <= choiceId) {
-            sql = """
-                SELECT 'choice' AS type, id, question, option_a, option_b, option_c, option_d, answer, score, reward
-                FROM choice
-                WHERE id = ?
-                """;
-        } else {
-            sql = """
-                SELECT 'blank' AS type, id, question, NULL AS option_a, NULL AS option_b, NULL AS option_c, NULL AS option_d, answer, score, reward
-                FROM blank
-                WHERE id = ?
-                """;
+        int globalIndex = id - 1;
+        QuizTable table = findTable(globalIndex);
+        if (table == null) {
+            ServerQuiz.logger.warning("Quiz id not found: " + id);
+            return null;
         }
+        int localId = findLocalId(table, globalIndex);
+
+        String sql = table.type == QuizType.Choice
+                ? "SELECT question, option_a, option_b, option_c, option_d, answer, score, reward FROM `" + table.name + "` WHERE id = ?"
+                : "SELECT question, answer, score, reward FROM `" + table.name + "` WHERE id = ?";
 
         try (Connection connection = dataSourceManager.getConnection();
-            PreparedStatement statement = connection.prepareStatement(sql)) {
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
-            if (id <= choiceId) {
-                statement.setInt(1, id);
-            } else {
-                statement.setInt(1, id - choiceId);
-            }
+            statement.setInt(1, localId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (!resultSet.next()) return null;
 
-            ResultSet resultSet = statement.executeQuery();
-
-            if (resultSet.next()) {
                 QuizEntry temp = new QuizEntry();
-                // 设置问题
-                temp.setId(resultSet.getInt("id"));
+                // 使用全局编号，保证 send <id> / show info <id> 与内部编号一致
+                temp.setId(id);
+                temp.setType(table.type);
                 temp.setQuestion(resultSet.getString("question"));
                 temp.setAnswer(resultSet.getString("answer"));
-                // 设置奖励
                 temp.setScore(resultSet.getInt("score"));
                 temp.setReward(resultSet.getString("reward"));
-                // 设置类型
-                String type = resultSet.getString("type");
-                switch (type) {
-                    case "choice" -> {
-                        // 设置选项
-                        temp.setType(QuizType.Choice);
-                        List<QuizEntry.QuizOption> options = new ArrayList<>();
-                        options.add(new QuizEntry.QuizOption("A", resultSet.getString("option_a")));
-                        options.add(new QuizEntry.QuizOption("B", resultSet.getString("option_b")));
-                        options.add(new QuizEntry.QuizOption("C", resultSet.getString("option_c")));
-                        options.add(new QuizEntry.QuizOption("D", resultSet.getString("option_d")));
-                        temp.setOptions(options);
-                    }
-                    case "blank" -> temp.setType(QuizType.Blank);
+
+                if (table.type == QuizType.Choice) {
+                    List<QuizEntry.QuizOption> options = new ArrayList<>();
+                    options.add(new QuizEntry.QuizOption("A", resultSet.getString("option_a")));
+                    options.add(new QuizEntry.QuizOption("B", resultSet.getString("option_b")));
+                    options.add(new QuizEntry.QuizOption("C", resultSet.getString("option_c")));
+                    options.add(new QuizEntry.QuizOption("D", resultSet.getString("option_d")));
+                    // 设置选项后会根据答案标签重新计算正确答案的内容集合
+                    temp.setOptions(options);
                 }
                 return temp;
             }
         } catch (SQLException e) {
-            ServerQuiz.logger.warning("Quiz list initialized failed!" + e.getMessage());
+            ServerQuiz.logger.warning("Failed to load quiz " + id + " from table [" + table.name + "]: " + e.getMessage());
         }
         return null;
     }
@@ -174,9 +285,13 @@ public class SqlControl implements QuizStorage {
 
     @Override
     public boolean addChoiceQuiz(String question, String optionA, String optionB, String optionC, String optionD, String answer, int score, String reward) {
-        String sql = """
-               INSERT INTO choice(question, option_a, option_b, option_c, option_d, answer, score, reward) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
-               """;
+        QuizTable table = findFirstTable(QuizType.Choice);
+        if (table == null) {
+            ServerQuiz.logger.warning("No choice quiz table is configured!");
+            return false;
+        }
+
+        String sql = "INSERT INTO `" + table.name + "`(question, option_a, option_b, option_c, option_d, answer, score, reward) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection connection = dataSourceManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -201,9 +316,13 @@ public class SqlControl implements QuizStorage {
 
     @Override
     public boolean addBlankQuiz(String question, String answer, int score, String reward) {
-        String sql = """
-               INSERT INTO blank(question, answer, score, reward) VALUES (?, ?, ?, ?);
-               """;
+        QuizTable table = findFirstTable(QuizType.Blank);
+        if (table == null) {
+            ServerQuiz.logger.warning("No blank quiz table is configured!");
+            return false;
+        }
+
+        String sql = "INSERT INTO `" + table.name + "`(question, answer, score, reward) VALUES (?, ?, ?, ?)";
 
         try (Connection connection = dataSourceManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -263,6 +382,8 @@ public class SqlControl implements QuizStorage {
     // 关闭数据库连接
     @Override
     public void closeQuiz() {
+        tables.clear();
+        maxId = 0;
         dataSourceManager.close();
         ServerQuiz.logger.info("Quiz list closed!");
     }

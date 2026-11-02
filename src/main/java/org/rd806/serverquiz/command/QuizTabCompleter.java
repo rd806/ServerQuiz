@@ -44,7 +44,7 @@ public class QuizTabCompleter implements TabCompleter {
                 if (args[1].equals("choice")) {
                     switch (args[2]) {
                         case "insert":
-                            addCompletions(completions, "<question> <optionA> <optionB> <optionC> <optionD> <answer> <score> <reward>");
+                            addCompletions(completions, "<question> <optionA> <optionB> <optionC> <optionD> <answer, e.g. A or A,C> <score> <reward>");
                             return completions;
                         case "alter":
                         case "delete":

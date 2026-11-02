@@ -182,7 +182,7 @@ public class QuizCommand implements CommandExecutor {
                 switch (args[2]) {
                     case "insert" -> {
                         if (args.length < 11) {
-                            sender.sendMessage("Usage: /quiz edit choice insert <question> <optionA> <optionB> <optionC> <optionD> <answer> <score> <reward>");
+                            sender.sendMessage("Usage: /quiz edit choice insert <question> <optionA> <optionB> <optionC> <optionD> <answer, e.g. A or A,C> <score> <reward>");
                             return false;
                         }
                         String question = args[3];

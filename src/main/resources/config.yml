@@ -9,6 +9,15 @@ config:
   # The database must be created in advance
   database: serverquiz
   useSSL: false
+  # Quiz banks to load, in the listed order.
+  # YAML:  reads quiz/<name>.yml under the plugin data folder.
+  # MYSQL: reads the table with the same name in the database.
+  # For MYSQL every table needs at least: id, question, answer, score, reward.
+  # A MYSQL table containing option_a ~ option_d is loaded as a choice bank; otherwise it is a blank bank.
+  # Add or remove banks here, then use /quiz reload to apply the change without restarting.
+  table:
+    - choice
+    - blank
 
 ###########################################
 ##             Update checker            ##
@@ -49,6 +58,10 @@ messages:
   sendEconomy: "Economy reward has been sent to you: "
   # Update player's score
   score: "Your score board has been updated!"
+  # No option selected when submitting a choice quiz
+  noSelection: "Please select at least one option!"
+  # No quiz is available
+  noQuiz: "There is no quiz available right now!"
 
 ##############################################
 ##              The GUI text                ##
@@ -64,6 +77,14 @@ gui:
     option: "Option "
     # Whether to arrange options randomly
     random: true
+    # The title of the selected answers display
+    selected: "Selected"
+    # The mark shown on a selected option
+    selectedMark: "Selected"
+    # The text shown when no option is selected
+    noneSelected: "None"
+    # The title of the submit button
+    submit: "Submit"
   # Available for blank quiz
   blank:
     answerSheet: "Answer sheet"

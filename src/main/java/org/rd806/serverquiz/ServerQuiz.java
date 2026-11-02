@@ -75,10 +75,16 @@ public final class ServerQuiz extends JavaPlugin {
 
         // 生成配置文件
         saveDefaultConfig();
-        reloadConfig();
+        reloadPluginConfig();
 
         quizConfig.initial();
         quizConfig.sendQuiz();
+    }
+
+    /// 重新读取 config.yml，并同步静态配置引用
+    public void reloadPluginConfig() {
+        reloadConfig();
+        config = getConfig();
     }
 
     @Override

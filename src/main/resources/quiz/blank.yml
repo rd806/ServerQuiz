@@ -1,0 +1,5 @@
+Blank:
+  - Question: "1+1=?"
+    Answer: "2"
+    Score: 10
+    Reward: DIAMOND

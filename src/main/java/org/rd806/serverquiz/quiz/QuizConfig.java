@@ -15,6 +15,7 @@ import org.rd806.serverquiz.storage.database.DatabaseConfig;
 import org.rd806.serverquiz.storage.StorageFactory;
 
 import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
 
 public class QuizConfig {
@@ -44,6 +45,10 @@ public class QuizConfig {
 
     /// 发送随机Quiz
     public void sendRandomQuiz() {
+        if (maxNum <= 0) {
+            ServerQuiz.logger.warning("No quiz loaded, skip sending random quiz!");
+            return;
+        }
         Random random = new Random();
         int id = random.nextInt(maxNum) + 1;
         ServerQuiz.main.quiz = getQuizById(id);
@@ -74,8 +79,11 @@ public class QuizConfig {
 
     /// 重新加载Quiz
     public void reload() {
+        // 重新读取 config.yml，使题库表等配置无需重启即可生效
+        ServerQuiz.main.reloadPluginConfig();
+        this.interval = ServerQuiz.config.getInt("broadcast.interval", 900);
         ServerQuiz.main.storage.setQuiz();
-        send.cancel();
+        if (send != null) send.cancel();
         sendQuiz();
     }
 
@@ -113,11 +121,22 @@ public class QuizConfig {
         }.runTaskTimer(ServerQuiz.main, 0L, 20L * this.interval);
    }
 
-    // 检查玩家是否回答正确
+    // 检查填空题回答
     public void check(Player player, String response) {
+        String answer = ServerQuiz.main.quiz.getAnswer();
+        handleAnswer(player, response.equals(answer));
+    }
+
+    // 检查选择题回答：将用户提交的内容集合与正确答案的内容集合比较，顺序无关
+    public void checkChoice(Player player, Set<String> selectedContents) {
+        Set<String> answerContents = ServerQuiz.main.quiz.getAnswerContents();
+        handleAnswer(player, !answerContents.isEmpty() && answerContents.equals(selectedContents));
+    }
+
+    // 统一处理回答结果
+    private void handleAnswer(Player player, boolean correct) {
         // 获取玩家UUID
         UUID uuid = player.getUniqueId();
-        boolean check;
         // 如果已有玩家回答正确
         if (ServerQuiz.main.quiz.getWinner() != null) {
             player.sendMessage(ServerQuiz.config.getString("messages.hasWinner", "The quiz has already been solved!"));
@@ -134,7 +153,7 @@ public class QuizConfig {
         ServerQuiz.main.quiz.getAnsweredPlayers().add(uuid);
 
         // 检查回答信息
-        if (response.equals(ServerQuiz.main.quiz.getAnswer())) {
+        if (correct) {
             player.sendMessage(ServerQuiz.config.getString("messages.correct", "You have solved the quiz!"));
             // 赠送物品奖励
             ItemStack reward = ServerQuiz.main.quiz.getReward();
@@ -151,14 +170,12 @@ public class QuizConfig {
             player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
             // 设置回答正确者
             ServerQuiz.main.quiz.setWinner(uuid);
-            check = true;
         } else {
             player.sendMessage(ServerQuiz.config.getString("messages.wrong", "Your answer is wrong!"));
-            check = false;
         }
 
         // 更新计分表，答对时累加题目的分数
-        if (ServerQuiz.main.storage.updateScoreBoard(player.getName(), check, ServerQuiz.main.quiz.getScore())) {
+        if (ServerQuiz.main.storage.updateScoreBoard(player.getName(), correct, ServerQuiz.main.quiz.getScore())) {
             player.sendMessage(ServerQuiz.config.getString("messages.score", "Your score board has been updated!"));
         }
         player.closeInventory();
