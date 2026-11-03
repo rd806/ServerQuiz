@@ -97,8 +97,16 @@ broadcast:
   # The text must be written in a single line
   text: "§e============\n§6§lNew Quiz begins! \n【Click here】 to join§r§e\n============"
   hover: "§7Click to join Server Quiz!"
-  # The time between each quiz, the unit is seconds
-  interval: 900
+  # When to broadcast the next quiz. Must be a quoted cron expression.
+  # 5 fields: minute hour day-of-month month day-of-week
+  # 6 fields: second minute hour day-of-month month day-of-week
+  # Day of week: 0 or 7 = Sunday, 1-6 = Monday-Saturday.
+  # Examples:
+  #   "*/15 * * * *"   every 15 minutes
+  #   "0 */2 * * *"    every 2 hours at minute 0
+  #   "0 0 20 * * *"   every day at 20:00:00
+  # If the expression is missing or invalid, the plugin falls back to 900 seconds.
+  interval: "*/15 * * * *"
 
 ##############################################
 ##             Answer messages              ##

@@ -68,7 +68,7 @@ public class QuizEvent implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        if (ServerQuiz.main.quizConfig.createScoreBoard(player.getName(), player.getUniqueId())) {
+        if (ServerQuiz.main.storage.createScoreBoard(player.getName(), player.getUniqueId())) {
             return;
         }
         ServerQuiz.logger.warning("Failed to create scoreboard for " + player.getName());

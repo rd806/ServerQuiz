@@ -99,6 +99,6 @@ public final class ServerQuiz extends JavaPlugin {
         logger.info("╚═════╝░╚══════╝╚═╝░░╚═╝░░░╚═╝░░░╚══════╝╚═╝░░╚═╝░░░╚═╝░░░░╚═════╝░╚═╝╚══════╝");
         logger.info(" ");
 
-        quizConfig.closeQuiz();
+        storage.closeQuiz();
     }
 }

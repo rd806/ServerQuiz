@@ -24,9 +24,9 @@ public class YamlControl implements QuizStorage {
 
     private List<Map<?, ?>> scoreRawMap;
 
-    /// config.yml 中配置并成功加载的题库文件
+    // config.yml 中配置并成功加载的题库文件
     private final List<QuizBank> banks;
-    /// 所有题库中的题目，按加载顺序统一编号
+    // 所有题库中的题目，按加载顺序统一编号
     private final List<QuizEntry> quizList;
 
     private final Map<String, ScoreData> scoreMap;
@@ -38,7 +38,7 @@ public class YamlControl implements QuizStorage {
         this.scoreMap = new HashMap<>();
     }
 
-    /// 一个题库文件，可同时包含 Choice 与 Blank 两段
+    // 一个题库文件，可同时包含 Choice 与 Blank 两段
     private static class QuizBank {
         private final File file;
         private final List<QuizEntry> choiceEntries = new ArrayList<>();
@@ -49,7 +49,6 @@ public class YamlControl implements QuizStorage {
         }
     }
 
-    /// 创建题库目录、迁移旧版 Quiz.yml，并按 config.table 加载所有题库文件
     @Override
     public void setQuiz() {
         quizFolder = new File(ServerQuiz.main.getDataFolder(), "quiz");
@@ -123,7 +122,7 @@ public class YamlControl implements QuizStorage {
         ServerQuiz.logger.info("Quiz number: " + quizList.size());
     }
 
-    /// 检查 jar 内是否存在指定资源
+    // 检查 jar 内是否存在指定资源
     private boolean hasResource(String path) {
         try (InputStream input = ServerQuiz.main.getResource(path)) {
             return input != null;
@@ -132,7 +131,9 @@ public class YamlControl implements QuizStorage {
         }
     }
 
-    /// 将旧版单个 Quiz.yml 拆分迁移到 quiz/choice.yml 与 quiz/blank.yml
+    /**
+     * 将旧版单个 Quiz.yml 拆分迁移到 quiz/choice.yml 与 quiz/blank.yml
+     */
     private void migrateLegacyQuizFile() {
         File legacy = new File(ServerQuiz.main.getDataFolder(), "Quiz.yml");
         if (!legacy.exists()) return;
@@ -161,7 +162,7 @@ public class YamlControl implements QuizStorage {
         }
     }
 
-    /// 读取单个题库文件
+    // 读取单个题库文件
     private void loadBank(QuizBank bank) {
         YamlConfiguration config = YamlConfiguration.loadConfiguration(bank.file);
 
@@ -179,7 +180,7 @@ public class YamlControl implements QuizStorage {
         }
     }
 
-    /// 解析选择题
+    // 解析选择题
     private QuizEntry parseChoice(Map<?, ?> tempMap) {
         Object optionsObj = tempMap.get("Options");
         if (!(optionsObj instanceof Map<?, ?> options)) return null;
@@ -197,7 +198,7 @@ public class YamlControl implements QuizStorage {
         return entry;
     }
 
-    /// 解析填空题
+    // 解析填空题
     private QuizEntry parseBlank(Map<?, ?> tempMap) {
         QuizEntry entry = new QuizEntry();
         entry.setType(QuizType.Blank);
@@ -209,7 +210,7 @@ public class YamlControl implements QuizStorage {
         return entry;
     }
 
-    /// 保存单个题库文件
+    // 保存单个题库文件
     private void saveBank(QuizBank bank) {
         try {
             // 先读取原文件，保留 Choice/Blank 以外的自定义内容
@@ -232,7 +233,7 @@ public class YamlControl implements QuizStorage {
         }
     }
 
-    /// 选择题转为可保存的 Map 列表
+    // 选择题转为可保存的 Map 列表
     private List<Map<String, Object>> choiceToMapList(List<QuizEntry> entries) {
         List<Map<String, Object>> result = new ArrayList<>();
         for (QuizEntry quizEntry : entries) {
@@ -260,7 +261,7 @@ public class YamlControl implements QuizStorage {
         return result;
     }
 
-    /// 填空题转为可保存的 Map 列表
+    // 填空题转为可保存的 Map 列表
     private List<Map<String, Object>> blankToMapList(List<QuizEntry> entries) {
         List<Map<String, Object>> result = new ArrayList<>();
         for (QuizEntry quizEntry : entries) {
@@ -318,7 +319,7 @@ public class YamlControl implements QuizStorage {
         return tempQuiz;
     }
 
-    /// 查找写入目标：优先选择已包含对应题型的题库，否则使用第一个题库
+    // 查找写入目标：优先选择已包含对应题型的题库，否则使用第一个题库
     private QuizBank findTargetBank(boolean forChoice) {
         for (QuizBank bank : banks) {
             if (forChoice ? !bank.choiceEntries.isEmpty() : !bank.blankEntries.isEmpty()) return bank;
@@ -412,7 +413,6 @@ public class YamlControl implements QuizStorage {
         return true;
     }
 
-    // 清空Quiz
     @Override
     public void closeQuiz() {
         // 题库文件的修改在 addChoiceQuiz / addBlankQuiz 时已即时保存，

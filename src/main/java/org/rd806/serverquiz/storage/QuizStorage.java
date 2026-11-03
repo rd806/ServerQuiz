@@ -16,7 +16,7 @@ public interface QuizStorage {
 
     boolean createScoreBoard(String name, UUID uuid);
     ScoreData getPlayerScore(String name);
-    /// 更新计分表，答对时额外累加 score 分数
+    // 更新计分表，答对时额外累加 score 分数
     boolean updateScoreBoard(String name, boolean check, int score);
 
     boolean addChoiceQuiz(String question, String optionA, String optionB, String optionC, String optionD, String answer, int score, String reward);

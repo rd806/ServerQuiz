@@ -16,7 +16,7 @@ public class QuizTabCompleter implements TabCompleter {
 
         if (command.getName().equalsIgnoreCase("serverquiz") || command.getName().equalsIgnoreCase("quiz")) {
             if (args.length == 1) {
-                addCompletions(completions, "initial", "send", "open", "show", "edit", "reload");
+                addCompletions(completions, "send", "open", "show", "edit", "reload");
                 return completions;
             } else if (args.length == 2) {
                 switch (args[0]) {
@@ -24,13 +24,13 @@ public class QuizTabCompleter implements TabCompleter {
                         addCompletions(completions, "<question ID>");
                         return completions;
                     case "show":
-                        addCompletions(completions, "num", "interval", "storage", "info", "score");
+                        addCompletions(completions, "num", "storage", "info", "score");
                         return completions;
                     case "edit":
-                        addCompletions(completions, "interval", "storage", "choice", "blank");
+                        addCompletions(completions, "storage", "choice", "blank");
                         return completions;
                 }
-            }  else if (args.length == 3) {
+            } else if (args.length == 3) {
                 switch (args[1]) {
                     case "info":
                         addCompletions(completions, "<quiz ID>");
