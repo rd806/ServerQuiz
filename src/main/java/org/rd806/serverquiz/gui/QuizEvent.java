@@ -27,12 +27,11 @@ public class QuizEvent implements Listener {
                 || !event.getClickedInventory().equals(inventoryView.getTopInventory())) {
             return;
         }
-
+        // 不让物品被取出
         event.setCancelled(true);
 
         ItemStack clicked = event.getCurrentItem();
         if (clicked == null) return;
-
         switch (event.getSlot()) {
             // 选项：切换选中状态
             case 19, 21, 23, 25 -> ServerQuiz.main.quizGui.toggleOption(player, event.getSlot());
@@ -48,12 +47,13 @@ public class QuizEvent implements Listener {
                 player.spigot().sendMessage(component);
                 player.closeInventory();
             }
-            default -> {
-            }
+            default -> {}
         }
     }
 
-    // 关闭界面时清除答题状态
+    /**
+     * 关闭界面时清除答题状态
+     */
     @EventHandler
     public void onClose(InventoryCloseEvent event) {
         if (!(event.getPlayer() instanceof Player player)) return;
@@ -62,7 +62,9 @@ public class QuizEvent implements Listener {
         }
     }
 
-    // 创建计分表
+    /**
+     * 创建计分表
+     */
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();

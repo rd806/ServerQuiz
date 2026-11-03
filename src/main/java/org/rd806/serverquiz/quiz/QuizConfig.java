@@ -31,19 +31,25 @@ public class QuizConfig {
         this.maxNum = 0;
     }
 
-    /// 初始化
+    /**
+     * 初始化
+     */
     public void initial() {
         StorageFactory factory = new StorageFactory();
         ServerQuiz.main.storage = factory.createQuizStorage(this.storageType, new DatabaseConfig());
         ServerQuiz.main.storage.setQuiz();
     }
 
-    /// 创建计分表
+    /**
+     * 创建计分表
+     */
     public boolean createScoreBoard(String name, UUID uuid) {
         return ServerQuiz.main.storage.createScoreBoard(name, uuid);
     }
 
-    /// 发送随机Quiz
+    /**
+     * 发送随机 Quiz
+     */
     public void sendRandomQuiz() {
         if (maxNum <= 0) {
             ServerQuiz.logger.warning("No quiz loaded, skip sending random quiz!");
@@ -51,48 +57,19 @@ public class QuizConfig {
         }
         Random random = new Random();
         int id = random.nextInt(maxNum) + 1;
-        ServerQuiz.main.quiz = getQuizById(id);
+        sendSpecificQuiz(id);
         ServerQuiz.logger.info("Sending random quiz: " + id);
-        sendText();
     }
 
-    /// 发送特定Quiz
+    /**
+     * 发送特定 Quiz
+     */
     public void sendSpecificQuiz(int id) {
         ServerQuiz.main.quiz = getQuizById(id);
         sendText();
     }
 
-    /// 获取特定Quiz
-    public QuizEntry getQuizById(int id) {
-        return ServerQuiz.main.storage.getQuizById(id);
-    }
-
-    /// 添加选择题
-    public boolean addChoiceQuiz(String question, String optionA, String optionB, String optionC, String optionD, String answer, int score, String reward) {
-        return ServerQuiz.main.storage.addChoiceQuiz(question, optionA, optionB, optionC, optionD, answer, score, reward);
-    }
-
-    /// 添加填空题
-    public boolean addBlankQuiz(String question, String answer, int score, String reward) {
-        return ServerQuiz.main.storage.addBlankQuiz(question, answer, score, reward);
-    }
-
-    /// 重新加载Quiz
-    public void reload() {
-        // 重新读取 config.yml，使题库表等配置无需重启即可生效
-        ServerQuiz.main.reloadPluginConfig();
-        this.interval = ServerQuiz.config.getInt("broadcast.interval", 900);
-        ServerQuiz.main.storage.setQuiz();
-        if (send != null) send.cancel();
-        sendQuiz();
-    }
-
-    /// 关闭Quiz系统
-    public void closeQuiz() {
-        ServerQuiz.main.storage.closeQuiz();
-    }
-
-    /// 发送文本组件
+    // 发送文本组件
     private void sendText() {
         // 创建可点击的文本组件
         TextComponent message = new TextComponent(ServerQuiz.config.getString(
@@ -109,7 +86,43 @@ public class QuizConfig {
         ServerQuiz.main.getServer().spigot().broadcast(message);
     }
 
-   // 定时发送Quiz
+    /**
+     * 获取特定Quiz
+     */
+    public QuizEntry getQuizById(int id) {
+        return ServerQuiz.main.storage.getQuizById(id);
+    }
+
+    /// 添加选择题
+    public boolean addChoiceQuiz(String question, String optionA, String optionB, String optionC, String optionD, String answer, int score, String reward) {
+        return ServerQuiz.main.storage.addChoiceQuiz(question, optionA, optionB, optionC, optionD, answer, score, reward);
+    }
+
+    /// 添加填空题
+    public boolean addBlankQuiz(String question, String answer, int score, String reward) {
+        return ServerQuiz.main.storage.addBlankQuiz(question, answer, score, reward);
+    }
+
+    /**
+     * 重新加载Quiz
+     */
+    public void reload() {
+        // 重新读取 config.yml，使题库表等配置无需重启即可生效
+        ServerQuiz.main.reloadPluginConfig();
+        this.interval = ServerQuiz.config.getInt("broadcast.interval", 900);
+        ServerQuiz.main.storage.setQuiz();
+        if (send != null) send.cancel();
+        sendQuiz();
+    }
+
+    /// 关闭Quiz系统
+    public void closeQuiz() {
+        ServerQuiz.main.storage.closeQuiz();
+    }
+
+   /**
+    * 定时发送 Quiz
+    */
    public void sendQuiz() {
         if (send != null) send.cancel();
         // 每 interval 秒发送一次
@@ -122,7 +135,7 @@ public class QuizConfig {
    }
 
     // 检查填空题回答
-    public void check(Player player, String response) {
+    public void checkBlank(Player player, String response) {
         String answer = ServerQuiz.main.quiz.getAnswer();
         handleAnswer(player, response.equals(answer));
     }
@@ -151,7 +164,6 @@ public class QuizConfig {
         }
         // 记录回答信息
         ServerQuiz.main.quiz.getAnsweredPlayers().add(uuid);
-
         // 检查回答信息
         if (correct) {
             player.sendMessage(ServerQuiz.config.getString("messages.correct", "You have solved the quiz!"));
@@ -173,7 +185,6 @@ public class QuizConfig {
         } else {
             player.sendMessage(ServerQuiz.config.getString("messages.wrong", "Your answer is wrong!"));
         }
-
         // 更新计分表，答对时累加题目的分数
         if (ServerQuiz.main.storage.updateScoreBoard(player.getName(), correct, ServerQuiz.main.quiz.getScore())) {
             player.sendMessage(ServerQuiz.config.getString("messages.score", "Your score board has been updated!"));
@@ -181,7 +192,9 @@ public class QuizConfig {
         player.closeInventory();
     }
 
-    // 获取特定的Quiz信息
+    /**
+     * 获取特定的 Quiz 信息
+     */
     public void getQuizInfo(CommandSender sender, QuizEntry quiz) {
         sender.sendMessage("The chosen quiz id is: " + quiz.getId());
         sender.sendMessage("-----------------------");
@@ -202,9 +215,7 @@ public class QuizConfig {
     }
 
     // 获取玩家回答信息
-    public ScoreData getScoreData(String name) {
-        return ServerQuiz.main.storage.getPlayerScore(name);
-    }
+    public ScoreData getScoreData(String name) { return ServerQuiz.main.storage.getPlayerScore(name); }
 
     public String getStorageType() { return this.storageType; }
     public void setStorageType(String storageType) { this.storageType = storageType; }

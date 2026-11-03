@@ -14,6 +14,8 @@ The Q&A system has two ways to storage data: YAML, MYSQL.
 
 > Since plugin version 1.1.0, fill-in-the-blanks quiz has been supported!
 
+### YAML
+
 If you choose `YAML` type, quizzes are stored as one file per bank under `plugins/ServerQuiz/quiz/`.
 The file names come from `config.table` in `config.yml`, for example `choice` loads `quiz/choice.yml`.
 Each file may contain a `Choice` section, a `Blank` section, or both.
@@ -43,17 +45,13 @@ Blank:
     Reward: DIAMOND
 ```
 
-> Upgrading from an older version? The plugin automatically splits the old `Quiz.yml` into
-> `quiz/choice.yml` and `quiz/blank.yml`, then renames the original to `Quiz.yml.migrated`.
+> Upgrading from an older version? The plugin automatically splits the old `Quiz.yml` into `quiz/choice.yml` and `quiz/blank.yml`, then renames the original to `Quiz.yml.migrated`.
 
-> For a multiple-choice question, write all correct labels separated by commas, for example `Answer: "A,C"`.
-> The order of the labels does not matter, and options are still shuffled randomly on the answer screen.
+For a multiple-choice question, write all correct labels separated by commas, for example `Answer: "A,C"`. The order of the labels does not matter, and options are still shuffled randomly on the answer screen.
 
-> Since version 1.1.2, you can set `Reward` a number if you have Vault based plugins. 
-> 
-> However, they must be written in a String format, which means wrapping them with double quotation marks.
+### MYSQL
 
-Or if you prefer `MYSQL`, please create a new database named `serverquiz` and set your basic config in advance:
+If you prefer `MYSQL`, please create a new database named `serverquiz` and set your basic config in advance:
 
 ```yaml
 config:

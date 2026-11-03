@@ -15,11 +15,11 @@ import java.util.*;
 
 public class SqlControl implements QuizStorage {
 
-    /// 表名仅允许字母、数字和下划线，避免拼接 SQL 时被注入
+    // 表名仅允许字母、数字和下划线，避免拼接 SQL 时被注入
     private static final String TABLE_NAME_PATTERN = "[A-Za-z0-9_]+";
 
     private final DataSourceManager dataSourceManager;
-    /// config.yml 中配置并成功加载的题库表
+    // config.yml 中配置并成功加载的题库表
     private final List<QuizTable> tables;
     private int maxId;
 
@@ -29,12 +29,12 @@ public class SqlControl implements QuizStorage {
         this.maxId = 0;
     }
 
-    /// 一个题库表：表内 id 列表与它在全局编号中的起始位置
+    // 一个题库表：表内 id 列表与它在全局编号中的起始位置
     private static class QuizTable {
         private final String name;
         private final QuizType type;
         private final List<Integer> ids;
-        /// 该表在全局编号中的起始下标（0 开始）
+        // 该表在全局编号中的起始下标（0 开始）
         private int offset;
 
         private QuizTable(String name, QuizType type, List<Integer> ids) {
@@ -44,7 +44,9 @@ public class SqlControl implements QuizStorage {
         }
     }
 
-    /// 初始化Quiz列表
+    /**
+     * 初始化Quiz列表
+     */
     @Override
     public void setQuiz() {
         tables.clear();

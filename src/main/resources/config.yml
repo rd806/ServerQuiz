@@ -62,6 +62,8 @@ messages:
   noSelection: "Please select at least one option!"
   # No quiz is available
   noQuiz: "There is no quiz available right now!"
+  # The quiz changed while the GUI was open
+  expired: "This quiz is no longer active!"
 
 ##############################################
 ##              The GUI text                ##

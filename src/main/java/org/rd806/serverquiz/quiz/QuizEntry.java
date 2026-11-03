@@ -60,7 +60,7 @@ public class QuizEntry {
     /**
      * 将答案字符串解析为标签集合，支持 "A"、"A,C"、"A C"、"A;C" 等写法
      */
-    public static Set<String> parseAnswerLabels(String answer) {
+    private static Set<String> parseAnswerLabels(String answer) {
         Set<String> labels = new LinkedHashSet<>();
         if (answer == null) return labels;
         for (String part : answer.split("[,;|\\s]+")) {
@@ -70,7 +70,9 @@ public class QuizEntry {
         return labels;
     }
 
-    /// 根据当前选项与答案标签重新计算正确答案的内容集合
+    /**
+     * 根据当前选项与答案标签重新计算正确答案的内容集合
+     */
     public void refreshAnswerContents() {
         this.answerContents = new LinkedHashSet<>(labelsToContents(parseAnswerLabels(answer)));
     }
@@ -157,7 +159,9 @@ public class QuizEntry {
         refreshAnswerContents();
     }
 
-    /// 获取选择题正确答案的内容集合
+    /**
+     * 获取选择题正确答案的内容集合
+     */
     public Set<String> getAnswerContents() {
         if (answerContents.isEmpty() && answer != null && options != null && !options.isEmpty()) {
             refreshAnswerContents();
@@ -175,9 +179,7 @@ public class QuizEntry {
     public int getScore() { return score; }
     public void setScore(int score) { this.score = score; }
 
-    /// 获取奖励
     public ItemStack getReward() { return reward; }
-    /// 设置奖励
     public void setReward(String rewardName) {
         if (rewardName == null || rewardName.isEmpty()) {
             ServerQuiz.logger.warning("Reward of the quiz is empty!");
@@ -190,8 +192,7 @@ public class QuizEntry {
         }
         this.reward = new ItemStack(rewardMaterial);
     }
-
-    /// 奖励的物品名称，无奖励时返回 None
+    // 奖励的物品名称，无奖励时返回 None
     public String getRewardName() {
         return reward == null ? "None" : reward.getType().toString();
     }
