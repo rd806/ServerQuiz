@@ -13,17 +13,25 @@ import org.rd806.serverquiz.quiz.QuizEntry;
 import org.rd806.serverquiz.quiz.QuizType;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class QuizGui {
 
-    // 选择题选项对应的界面槽位
-    private static final int[] OPTION_SLOTS = {19, 21, 23, 25};
-    // 选择题选项对应的物品
-    private static final Material[] OPTION_MATERIALS = {
-            Material.RED_WOOL, Material.YELLOW_WOOL, Material.BLUE_WOOL, Material.GREEN_WOOL
-    };
-    private static final int SUBMIT_SLOT = 40;
+    // 选择题选项：选项下标、界面槽位、显示物品
+    private record OptionSlot(int index, int slot, Material material) {}
 
+    // 列表顺序对应选项 A、B、C、D，按下标直接读取
+    private static final List<OptionSlot> OPTION_SLOTS = List.of(
+            new OptionSlot(0, 19, Material.RED_WOOL),
+            new OptionSlot(1, 21, Material.YELLOW_WOOL),
+            new OptionSlot(2, 23, Material.BLUE_WOOL),
+            new OptionSlot(3, 25, Material.GREEN_WOOL)
+    );
+    // 槽位 → 选项，按槽位直接读取
+    private static final Map<Integer, OptionSlot> OPTION_BY_SLOT =  OPTION_SLOTS.stream()
+            .collect(Collectors.toUnmodifiableMap(OptionSlot::slot, option -> option));
+    // 提交按钮
+    private static final int SUBMIT_SLOT = 40;
     // 每位玩家的答题状态（各自的选项顺序与已选标签）
     private final Map<UUID, PlayerSession> sessions = new HashMap<>();
 
@@ -53,13 +61,12 @@ public class QuizGui {
         Inventory quizMenu = Bukkit.createInventory(null, 45,
                 ServerQuiz.config.getString("gui.title", "Quiz Menu"));
 
-        QuizEntry source = ServerQuiz.main.quiz;
-        // 当前没有可答的题目时返回空界面
+        QuizEntry source = ServerQuiz.main.currentQuiz;
+        // 当前没有可答的题目时返回 NULL
         if (source == null || source.getType() == null) {
             player.sendMessage(ServerQuiz.config.getString("messages.noQuiz", "There is no quiz available right now!"));
-            return quizMenu;
+            return null;
         }
-
         // 复制一份题目，让每位玩家的选项顺序互不影响
         QuizEntry entry = source.copy();
         // 打乱选项后重新映射标签，保证界面标签与选项内容一一对应
@@ -139,7 +146,7 @@ public class QuizGui {
         // 获取计分表信息
         String title = ServerQuiz.config.getString("gui.scoreBoard.title", "Your quiz score board");
         List<String> lines = ServerQuiz.config.getStringList("gui.scoreBoard.lore");
-        lines = ServerQuiz.main.placeHolder.resolve(player, lines);
+        lines = ServerQuiz.placeHolder.resolve(player, lines);
         if (skullMeta != null) {
             skullMeta.setOwningPlayer(player);
             skullMeta.setDisplayName(title);
@@ -155,7 +162,7 @@ public class QuizGui {
     private void renderChoices(PlayerSession session) {
         List<QuizEntry.QuizOption> options = session.getEntry().getOptions();
         // 选项数量可能少于 4 个
-        for (int i = 0; i < OPTION_SLOTS.length && i < options.size(); i++) {
+        for (int i = 0; i < OPTION_SLOTS.size() && i < options.size(); i++) {
             renderOption(session, i);
         }
         // 提交按钮上展示玩家已选择的选项
@@ -172,7 +179,8 @@ public class QuizGui {
         } else {
             lore.add("§7Click to select");
         }
-        AddItemToMenu(session.getMenu(), OPTION_SLOTS[index], OPTION_MATERIALS[index],
+        OptionSlot optionSlot = OPTION_SLOTS.get(index);
+        AddItemToMenu(session.getMenu(), optionSlot.slot(), optionSlot.material(),
                 "§r" + ServerQuiz.config.getString("gui.choice.option", "Option") + option.label,
                 lore.toArray(new String[0]));
     }
@@ -200,20 +208,16 @@ public class QuizGui {
         return lore;
     }
 
-    // 槽位对应的选项下标，非选项槽位返回 -1
-    private int optionIndex(int slot) {
-        for (int i = 0; i < OPTION_SLOTS.length; i++) {
-            if (OPTION_SLOTS[i] == slot) return i;
-        }
-        return -1;
-    }
-
     // 切换选项的选中状态（先选择，再提交）
     public void toggleOption(Player player, int slot) {
         PlayerSession session = sessions.get(player.getUniqueId());
         if (session == null || session.getEntry().getType() != QuizType.Choice) return;
 
-        int index = optionIndex(slot);
+        // 直接按槽位读取选项，点击非选项槽位时返回
+        OptionSlot optionSlot = OPTION_BY_SLOT.get(slot);
+        if (optionSlot == null) return;
+        int index = optionSlot.index();
+
         List<QuizEntry.QuizOption> options = session.getEntry().getOptions();
         if (index < 0 || index >= options.size()) return;
 
@@ -231,7 +235,7 @@ public class QuizGui {
         if (session == null || session.getEntry().getType() != QuizType.Choice) return;
 
         // 界面打开时题目可能已经切换，避免把旧题目的答案提交到新题目
-        QuizEntry current = ServerQuiz.main.quiz;
+        QuizEntry current = ServerQuiz.main.currentQuiz;
         if (current == null || current.getId() != session.getEntry().getId()) {
             player.sendMessage(ServerQuiz.config.getString("messages.expired",
                     "This quiz is no longer active!"));

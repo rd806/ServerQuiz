@@ -22,10 +22,10 @@ public final class ServerQuiz extends JavaPlugin {
     // 主类
     public static ServerQuiz main;
     // 配置变量
-    public PlaceHolder placeHolder;
-    public Vault vault;
+    public static PlaceHolder placeHolder;
+    public static Vault vault;
 
-    public QuizEntry quiz;
+    public QuizEntry currentQuiz;
     public QuizConfig quizConfig;
     public QuizGui quizGui;
 
@@ -40,10 +40,7 @@ public final class ServerQuiz extends JavaPlugin {
         main = this;
         logger = main.getLogger();
         config = main.getConfig();
-        this.placeHolder = new PlaceHolder();
-        this.quiz = new QuizEntry();
-        this.quizConfig = new QuizConfig();
-        this.quizGui = new QuizGui();
+        placeHolder = new PlaceHolder();
     }
 
     @Override
@@ -77,11 +74,16 @@ public final class ServerQuiz extends JavaPlugin {
         saveDefaultConfig();
         reloadPluginConfig();
 
-        quizConfig.initial();
-        quizConfig.sendQuiz();
+        this.currentQuiz = new QuizEntry();
+        this.quizConfig = new QuizConfig();
+        this.quizGui = new QuizGui();
+        // 必须在 quizConfig 赋值之后初始化，setQuiz 会回调 quizConfig.setMaxNum
+        this.quizConfig.initial();
     }
 
-    /// 重新读取 config.yml，并同步静态配置引用
+    /**
+     * 重新读取 config.yml，并同步静态配置引用
+     */
     public void reloadPluginConfig() {
         reloadConfig();
         config = getConfig();

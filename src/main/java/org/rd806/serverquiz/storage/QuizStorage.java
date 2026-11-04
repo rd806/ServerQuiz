@@ -5,7 +5,7 @@ import org.rd806.serverquiz.quiz.QuizEntry;
 
 import java.util.UUID;
 
-/*
+/**
  * 存储接口
  */
 public interface QuizStorage {

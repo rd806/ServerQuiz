@@ -23,9 +23,7 @@ import java.util.UUID;
 public class QuizConfig {
 
     // cron 表达式缺失或解析失败时使用的默认间隔（秒）
-    private static final int DEFAULT_INTERVAL_SECONDS = 900;
-    // 秒数间隔，仅在未使用 cron 时有效
-    private int interval;
+    public static final int DEFAULT_INTERVAL_SECONDS = 900;
     // cron 表达式原文，未使用 cron 时为 null
     private String schedule;
     // 解析后的 cron 表达式，未使用 cron 时为 null
@@ -35,7 +33,6 @@ public class QuizConfig {
 
     private String storageType;
     private int maxNum;
-
     // 定时任务
     private BukkitTask send;
 
@@ -47,7 +44,6 @@ public class QuizConfig {
 
     // 读取 broadcast.interval，只接受 cron 表达式；缺失或解析失败时回退到 900 秒
     private void loadSchedule() {
-        this.interval = DEFAULT_INTERVAL_SECONDS;
         this.schedule = null;
         this.cron = null;
 
@@ -69,14 +65,18 @@ public class QuizConfig {
     }
 
     /**
-     * 初始化
+     * 初始化，任务如下：
+     * <ul>
+     *     <li>创建存储工厂</li>
+     *     <li>设置题库文件</li></li>
+     *     <li>发送 Quiz </li>
+     * </ul>
      */
     public void initial() {
-        // 确保启动时读取的是 reloadConfig 之后的最新配置
-        loadSchedule();
         StorageFactory factory = new StorageFactory();
         ServerQuiz.main.storage = factory.createQuizStorage(this.storageType, new DatabaseConfig());
         ServerQuiz.main.storage.setQuiz();
+        sendQuiz();
     }
 
     /**
@@ -97,7 +97,7 @@ public class QuizConfig {
      * 发送特定 Quiz
      */
     public void sendSpecificQuiz(int id) {
-        ServerQuiz.main.quiz = ServerQuiz.main.storage.getQuizById(id);
+        ServerQuiz.main.currentQuiz = ServerQuiz.main.storage.getQuizById(id);
         sendText();
     }
 
@@ -156,27 +156,25 @@ public class QuizConfig {
             ServerQuiz.logger.info("Quiz schedule: cron \"" + this.schedule + "\"");
             return;
         }
-        // cron 解析失败时的回退方法
-        // 每 interval 秒发送一次
-        final int period = Math.max(1, this.interval);
+        // cron 缺失或解析失败时，按默认间隔发送
         send = new BukkitRunnable() {
             @Override
             public void run() {
                 sendRandomQuiz();
             }
-        }.runTaskTimer(ServerQuiz.main, 0L, 20L * period);
-        ServerQuiz.logger.info("Quiz schedule: every " + period + "s");
+        }.runTaskTimer(ServerQuiz.main, 0L, 20L * DEFAULT_INTERVAL_SECONDS);
+        ServerQuiz.logger.info("Quiz schedule: every " + DEFAULT_INTERVAL_SECONDS + "s");
     }
 
     // 检查填空题回答
     public void checkBlank(Player player, String response) {
-        String answer = ServerQuiz.main.quiz.getAnswer();
+        String answer = ServerQuiz.main.currentQuiz.getAnswer();
         handleAnswer(player, response.equals(answer));
     }
 
     // 检查选择题回答：将用户提交的内容集合与正确答案的内容集合比较，顺序无关
     public void checkChoice(Player player, Set<String> selectedContents) {
-        Set<String> answerContents = ServerQuiz.main.quiz.getAnswerContents();
+        Set<String> answerContents = ServerQuiz.main.currentQuiz.getAnswerContents();
         handleAnswer(player, !answerContents.isEmpty() && answerContents.equals(selectedContents));
     }
 
@@ -185,42 +183,42 @@ public class QuizConfig {
         // 获取玩家UUID
         UUID uuid = player.getUniqueId();
         // 如果已有玩家回答正确
-        if (ServerQuiz.main.quiz.getWinner() != null) {
+        if (ServerQuiz.main.currentQuiz.getWinner() != null) {
             player.sendMessage(ServerQuiz.config.getString("messages.hasWinner", "The quiz has already been solved!"));
             player.closeInventory();
             return;
         }
         // 检查玩家是否已经回答过
-        if (ServerQuiz.main.quiz.getAnsweredPlayers().contains(uuid)) {
+        if (ServerQuiz.main.currentQuiz.getAnsweredPlayers().contains(uuid)) {
             player.sendMessage(ServerQuiz.config.getString("messages.hasAnswered", "You have already answered this quiz!"));
             player.closeInventory();
             return;
         }
         // 记录回答信息
-        ServerQuiz.main.quiz.getAnsweredPlayers().add(uuid);
+        ServerQuiz.main.currentQuiz.getAnsweredPlayers().add(uuid);
         // 检查回答信息
         if (correct) {
             player.sendMessage(ServerQuiz.config.getString("messages.correct", "You have solved the quiz!"));
             // 赠送物品奖励
-            ItemStack reward = ServerQuiz.main.quiz.getReward();
+            ItemStack reward = ServerQuiz.main.currentQuiz.getReward();
             if (reward != null) {
                 player.getInventory().addItem(reward);
                 player.sendMessage(ServerQuiz.config.getString("messages.sendReward", "Reward has been sent to you: ")
                         + reward.getType());
             }
             // 赠送经济奖励，仅当 Vault 可用时发放
-            int score = ServerQuiz.main.quiz.getScore();
-            if (score > 0 && !ServerQuiz.main.vault.isEconomyNotAvailable()) {
-                ServerQuiz.main.vault.addPlayerEconomy(player, score);
+            int score = ServerQuiz.main.currentQuiz.getScore();
+            if (score > 0 && !ServerQuiz.vault.isEconomyNotAvailable()) {
+                ServerQuiz.vault.addPlayerEconomy(player, score);
             }
             player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
             // 设置回答正确者
-            ServerQuiz.main.quiz.setWinner(uuid);
+            ServerQuiz.main.currentQuiz.setWinner(uuid);
         } else {
             player.sendMessage(ServerQuiz.config.getString("messages.wrong", "Your answer is wrong!"));
         }
         // 更新计分表，答对时累加题目的分数
-        if (ServerQuiz.main.storage.updateScoreBoard(player.getName(), correct, ServerQuiz.main.quiz.getScore())) {
+        if (ServerQuiz.main.storage.updateScoreBoard(player.getName(), correct, ServerQuiz.main.currentQuiz.getScore())) {
             player.sendMessage(ServerQuiz.config.getString("messages.score", "Your score board has been updated!"));
         }
         player.closeInventory();
@@ -252,13 +250,9 @@ public class QuizConfig {
         sender.sendMessage("-----------------------");
     }
 
-    // 获取玩家回答信息
-    public ScoreData getScoreData(String name) { return ServerQuiz.main.storage.getPlayerScore(name); }
-
     public String getStorageType() { return this.storageType; }
     public void setStorageType(String storageType) { this.storageType = storageType; }
 
-    public int getInterval() { return this.interval; }
     // cron 表达式原文，未使用 cron 时返回 null
     public String getSchedule() { return this.schedule; }
 

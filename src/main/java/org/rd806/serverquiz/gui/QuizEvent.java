@@ -12,6 +12,9 @@ import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.rd806.serverquiz.ServerQuiz;
 
+/**
+ * 处理 Quiz GUI 界面的事件
+ */
 public class QuizEvent implements Listener {
 
     @EventHandler
@@ -63,7 +66,7 @@ public class QuizEvent implements Listener {
     }
 
     /**
-     * 创建计分表
+     * 玩家加入世界时创建计分表
      */
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {

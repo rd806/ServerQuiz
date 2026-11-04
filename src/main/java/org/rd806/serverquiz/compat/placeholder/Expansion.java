@@ -47,7 +47,7 @@ public class Expansion extends PlaceholderExpansion {
 
         if (player == null) return "Player Not Found";
 
-        ScoreData scoreData = ServerQuiz.main.quizConfig.getScoreData(player.getName());
+        ScoreData scoreData = ServerQuiz.main.storage.getPlayerScore(player.getName());
         int correctAnswers = scoreData.correctAnswers();
         int allAnswers = scoreData.totalAnswers();
         int scores = scoreData.scores();

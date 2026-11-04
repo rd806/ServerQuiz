@@ -26,7 +26,7 @@ public class PlaceHolder {
     public PlaceHolder() {
         registerProvider("serverquiz_", (key, player) -> {
             if (player == null) return "?";
-            ScoreData scoreData = ServerQuiz.main.quizConfig.getScoreData(player.getName());
+            ScoreData scoreData = ServerQuiz.main.storage.getPlayerScore(player.getName());
             if (scoreData == null) return "?";
 
             int correctAnswers = scoreData.correctAnswers();

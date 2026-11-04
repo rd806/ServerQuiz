@@ -6,6 +6,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.rd806.serverquiz.quiz.QuizConfig;
 import org.rd806.serverquiz.quiz.ScoreData;
 import org.rd806.serverquiz.ServerQuiz;
 import org.rd806.serverquiz.quiz.QuizEntry;
@@ -40,16 +41,14 @@ public class QuizCommand implements CommandExecutor {
         if (schedule != null) {
             return "The schedule of each Quiz: " + schedule;
         }
-        return "The interval between each Quiz: " + ServerQuiz.main.quizConfig.getInterval() + "s";
+        return "No valid cron schedule, using the default " + QuizConfig.DEFAULT_INTERVAL_SECONDS + "s";
     }
 
     /**
      * 发送 Quiz
      */
     private boolean sendQuiz(CommandSender sender, String[] args) {
-        Player player;
-        if (sender instanceof Player) {
-            player = (Player) sender;
+        if (sender instanceof Player player) {
             if (!player.hasPermission("serverquiz.edit")) {
                 sender.sendMessage("§cYou do not have permission \"serverquiz.edit\" to use this command.");
                 return false;
@@ -59,7 +58,7 @@ public class QuizCommand implements CommandExecutor {
         if (args.length == 2) {
             int id = Integer.parseInt(args[1]);
             if (id > ServerQuiz.main.quizConfig.getMaxNum()) {
-                ServerQuiz.logger.warning("The chosen id is out of bounds or NOT FOUND!");
+                sender.sendMessage("The chosen id is out of bounds or NOT FOUND!");
                 return false;
             }
             ServerQuiz.main.quizConfig.sendSpecificQuiz(id);
@@ -74,19 +73,16 @@ public class QuizCommand implements CommandExecutor {
      * 打开 Quiz 界面
      */
     private boolean openQuiz(CommandSender sender) {
-        Player player;
-        if (sender instanceof Player) {
-            player = (Player) sender;
+        if (sender instanceof Player player) {
             if (!player.hasPermission("serverquiz.open")) {
                 sender.sendMessage("§cYou do not have permission \"serverquiz.open\" to use this command.");
                 return false;
             }
-            // 若当前不存在可用 Quiz 则退出
-            if (ServerQuiz.main.quiz.equals(new QuizEntry())) {
-                return false;
-            }
             Inventory quizMenu = ServerQuiz.main.quizGui.createQuizMenu(player);
-            player.openInventory(quizMenu);
+            // 确保存在可用 Quiz
+            if (quizMenu != null) {
+                player.openInventory(quizMenu);
+            }
             return true;
         }
         sender.sendMessage("Not a player! Skip the command.");
@@ -97,10 +93,8 @@ public class QuizCommand implements CommandExecutor {
      * 展示 Quiz 信息
      */
     private boolean showInfo(CommandSender sender, String[] args) {
-        Player player;
         // 权限检查
-        if (sender instanceof Player) {
-            player = (Player) sender;
+        if (sender instanceof Player player) {
             if (!player.hasPermission("serverquiz.show")) {
                 sender.sendMessage("§cYou do not have permission \"serverquiz.show\" to use this command.");
                 return false;
@@ -135,13 +129,13 @@ public class QuizCommand implements CommandExecutor {
             case "info" -> {
                 // 获取当前Quiz信息
                 if (args.length == 2) {
-                    ServerQuiz.main.quizConfig.getQuizInfo(sender, ServerQuiz.main.quiz);
+                    ServerQuiz.main.quizConfig.getQuizInfo(sender, ServerQuiz.main.currentQuiz);
                     return true;
                 }
                 // 获取特定 ID 的 Quiz 信息
                 int num = Integer.parseInt(args[2]);
                 if (num > ServerQuiz.main.quizConfig.getMaxNum()) {
-                    ServerQuiz.logger.warning("The chosen id is out of bounds or NOT FOUND!");
+                    sender.sendMessage("The chosen id is out of bounds or NOT FOUND!");
                     return false;
                 }
                 QuizEntry temp = ServerQuiz.main.storage.getQuizById(num);
@@ -150,18 +144,12 @@ public class QuizCommand implements CommandExecutor {
             }
             // 获取玩家回答信息
             case "score" -> {
-                String target;
-                if (!(sender instanceof Player)) {
-                    ServerQuiz.logger.info("You must be a player to use this command.");
-                    return false;
-                }
-                // 默认发送自己的分数
+                // 默任获取完整计分表
                 if (args.length == 2) {
-                    target = sender.getName();
-                } else {
-                    target = args[2];
+                    return true;
                 }
-                ScoreData scoreData = ServerQuiz.main.quizConfig.getScoreData(target);
+                String target = args[2];
+                ScoreData scoreData = ServerQuiz.main.storage.getPlayerScore(target);
                 if (scoreData == null) {
                     sender.sendMessage("§cNo score board found for " + target);
                     return false;
@@ -184,9 +172,7 @@ public class QuizCommand implements CommandExecutor {
      * 编辑信息
      */
     private boolean editQuiz(CommandSender sender, String[] args) {
-        Player player;
-        if (sender instanceof Player) {
-            player = (Player) sender;
+        if (sender instanceof Player player) {
             if (!player.hasPermission("serverquiz.edit")) {
                 sender.sendMessage("§cYou do not have permission \"serverquiz.edit\" to use this command.");
                 return false;
@@ -222,7 +208,7 @@ public class QuizCommand implements CommandExecutor {
                     String reward = args[10];
                     if (ServerQuiz.main.storage.addChoiceQuiz(question, optionA, optionB, optionC, optionD, answer, score, reward)) {
                         sender.sendMessage("The choice quiz has been added!");
-                        sender.sendMessage("Please use /quiz initial to enable the change");
+                        sender.sendMessage("Please use /quiz reload to enable the change");
                         return true;
                     } else {
                         sender.sendMessage("Failed to add choice quiz!");
@@ -253,7 +239,7 @@ public class QuizCommand implements CommandExecutor {
                     String reward = args[6];
                     if (ServerQuiz.main.storage.addBlankQuiz(question, answer, score, reward)) {
                         sender.sendMessage("The blank quiz has been added!");
-                        sender.sendMessage("Please use /quiz initial to enable the change");
+                        sender.sendMessage("Please use /quiz reload to enable the change");
                         return true;
                     } else {
                         sender.sendMessage("Failed to add blank quiz!");
@@ -273,16 +259,14 @@ public class QuizCommand implements CommandExecutor {
      * 重载 Quiz
      */
     private boolean reloadQuiz(CommandSender sender) {
-        Player player;
-        if (sender instanceof Player) {
-            player = (Player) sender;
+        if (sender instanceof Player player) {
             if (!player.hasPermission("serverquiz.edit")) {
                 sender.sendMessage("§cYou do not have permission \"serverquiz.edit\" to use this command.");
                 return false;
             }
         }
         ServerQuiz.main.quizConfig.reload();
-        sender.sendMessage("Reload successful!");
+        sender.sendMessage("Reload successfully!");
         return true;
     }
 }
