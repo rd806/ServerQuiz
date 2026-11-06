@@ -169,20 +169,19 @@ public class SqlControl implements QuizStorage {
         return null;
     }
 
-    /// 根据全局下标获取表内 id
+    // 根据全局下标获取表内 id
     private int findLocalId(QuizTable table, int globalIndex) {
         return table.ids.get(globalIndex - table.offset);
     }
 
-    /// 查找指定类型的第一个题库表
-    private QuizTable findFirstTable(QuizType type) {
+    // 查找指定类型的题库表
+    private QuizTable findTargetTable(String name) {
         for (QuizTable table : tables) {
-            if (table.type == type) return table;
+            if (table.name.equalsIgnoreCase(name)) return table;
         }
         return null;
     }
 
-    /// 根据id获取对应的Quiz
     @Override
     public QuizEntry getQuizById(int id) {
         if (id < 1 || id > maxId) {
@@ -286,10 +285,21 @@ public class SqlControl implements QuizStorage {
     }
 
     @Override
-    public boolean addChoiceQuiz(String question, String optionA, String optionB, String optionC, String optionD, String answer, int score, String reward) {
-        QuizTable table = findFirstTable(QuizType.Choice);
-        if (table == null) {
-            ServerQuiz.logger.warning("No choice quiz table is configured!");
+    public QuizType getTableType(String name) {
+        for (QuizTable table : tables) {
+            if (table.name.equalsIgnoreCase(name)) {
+                return table.type;
+            }
+        }
+        return null;
+    }
+
+
+    @Override
+    public boolean addChoiceQuiz(String name, String question, String optionA, String optionB, String optionC, String optionD, String answer, int score, String reward) {
+        QuizTable table = findTargetTable(name);
+        if (table == null || table.type != QuizType.Choice) {
+            ServerQuiz.logger.warning("[" + name + "] is not a Choice quiz table!");
             return false;
         }
 
@@ -317,10 +327,10 @@ public class SqlControl implements QuizStorage {
     }
 
     @Override
-    public boolean addBlankQuiz(String question, String answer, int score, String reward) {
-        QuizTable table = findFirstTable(QuizType.Blank);
-        if (table == null) {
-            ServerQuiz.logger.warning("No blank quiz table is configured!");
+    public boolean addBlankQuiz(String name, String question, String answer, int score, String reward) {
+        QuizTable table = findTargetTable(name);
+        if (table == null || table.type != QuizType.Blank) {
+            ServerQuiz.logger.warning("[" + name + "] is not a Blank quiz table!");
             return false;
         }
 
@@ -339,6 +349,69 @@ public class SqlControl implements QuizStorage {
 
         } catch (SQLException e) {
             ServerQuiz.logger.warning("Insert blank quiz failed!" + e.getMessage());
+            return false;
+        }
+    }
+
+    // 根据全局编号找到指定表内的 id，不属于该表时返回 null
+    private Integer findLocalIdForGlobal(QuizTable table, int globalId) {
+        int index = globalId - 1 - table.offset;
+        if (index < 0 || index >= table.ids.size()) return null;
+        return table.ids.get(index);
+    }
+
+    @Override
+    public boolean updateChoiceQuiz(String name, int id, String question, String optionA, String optionB, String optionC, String optionD, String answer, int score, String reward) {
+        QuizTable table = findTargetTable(name);
+        if (table == null || table.type != QuizType.Choice) return false;
+        Integer localId = findLocalIdForGlobal(table, id);
+        if (localId == null) return false;
+
+        String sql = "UPDATE `" + table.name + "` SET question = ?, option_a = ?, option_b = ?, option_c = ?, option_d = ?, answer = ?, score = ?, reward = ? WHERE id = ?";
+
+        try (Connection connection = dataSourceManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, question);
+            statement.setString(2, optionA);
+            statement.setString(3, optionB);
+            statement.setString(4, optionC);
+            statement.setString(5, optionD);
+            statement.setString(6, answer);
+            statement.setInt(7, score);
+            statement.setString(8, reward);
+            statement.setInt(9, localId);
+
+            return statement.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            ServerQuiz.logger.warning("Update choice quiz failed! " + e.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public boolean updateBlankQuiz(String name, int id, String question, String answer, int score, String reward) {
+        QuizTable table = findTargetTable(name);
+        if (table == null || table.type != QuizType.Blank) return false;
+        Integer localId = findLocalIdForGlobal(table, id);
+        if (localId == null) return false;
+
+        String sql = "UPDATE `" + table.name + "` SET question = ?, answer = ?, score = ?, reward = ? WHERE id = ?";
+
+        try (Connection connection = dataSourceManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, question);
+            statement.setString(2, answer);
+            statement.setInt(3, score);
+            statement.setString(4, reward);
+            statement.setInt(5, localId);
+
+            return statement.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            ServerQuiz.logger.warning("Update blank quiz failed! " + e.getMessage());
             return false;
         }
     }

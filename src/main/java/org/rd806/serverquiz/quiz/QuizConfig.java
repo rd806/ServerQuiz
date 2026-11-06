@@ -11,8 +11,12 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.rd806.serverquiz.ServerQuiz;
+import org.rd806.serverquiz.storage.QuizStorage;
+import org.rd806.serverquiz.storage.database.DataSourceManager;
 import org.rd806.serverquiz.storage.database.DatabaseConfig;
-import org.rd806.serverquiz.storage.StorageFactory;
+import org.rd806.serverquiz.storage.database.DatabaseInitial;
+import org.rd806.serverquiz.storage.database.SqlControl;
+import org.rd806.serverquiz.storage.yaml.YamlControl;
 import org.rd806.serverquiz.utils.CronSchedule;
 
 import java.time.ZonedDateTime;
@@ -73,10 +77,31 @@ public class QuizConfig {
      * </ul>
      */
     public void initial() {
-        StorageFactory factory = new StorageFactory();
-        ServerQuiz.main.storage = factory.createQuizStorage(this.storageType, new DatabaseConfig());
+        ServerQuiz.main.storage = createQuizStorage(this.storageType, new DatabaseConfig());
         ServerQuiz.main.storage.setQuiz();
         sendQuiz();
+    }
+
+    // 获取存储工厂
+    private QuizStorage createQuizStorage(String type, DatabaseConfig databaseConfig) {
+        if (type.equalsIgnoreCase("mysql")) {
+            ServerQuiz.logger.info("Using MySQL QuizStorage for QuizPlugin");
+            // 设置数据库信息
+            databaseConfig.setHost(ServerQuiz.config.getString("config.host",  "localhost"));
+            databaseConfig.setPort(ServerQuiz.config.getInt("config.port", 3036));
+            databaseConfig.setDatabase(ServerQuiz.config.getString("config.database", "quizplugin"));
+            databaseConfig.setUsername(ServerQuiz.config.getString("config.username", "root"));
+            databaseConfig.setPassword(ServerQuiz.config.getString("config.password", ""));
+            databaseConfig.setUseSSL(ServerQuiz.config.getBoolean("config.useSSL", false));
+            // 建立数据库连接
+            DataSourceManager dataSourceManager = new DataSourceManager(databaseConfig);
+            DatabaseInitial databaseInitial = new DatabaseInitial(dataSourceManager);
+            databaseInitial.initialTable();
+            return new SqlControl(dataSourceManager);
+        } else {
+            ServerQuiz.logger.info("Using YAML QuizStorage for QuizPlugin");
+            return new YamlControl();
+        }
     }
 
     /**

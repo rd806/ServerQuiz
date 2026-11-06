@@ -10,7 +10,7 @@ config:
   database: serverquiz
   useSSL: false
   # Quiz banks to load, in the listed order.
-  # YAML:  reads quiz/<name>.yml under the plugin data folder.
+  # YAML:  reads quiz/<name>.yml; the file declares `type` and lists `entry` items.
   # MYSQL: reads the table with the same name in the database.
   # For MYSQL every table needs at least: id, question, answer, score, reward.
   # A MYSQL table containing option_a ~ option_d is loaded as a choice bank; otherwise it is a blank bank.

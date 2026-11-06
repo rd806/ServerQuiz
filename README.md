@@ -1,4 +1,4 @@
-## Introduction
+# Server Quiz
 
 This plugin is based on `org.spigotmc:spigot-api:1.20.1-R0.1-SNAPSHOT`, branching out from my previous project [zhisuan11core](https://github.com/rd806/zhisuan11core).
 
@@ -18,36 +18,40 @@ The Q&A system has two ways to storage data: YAML, MYSQL.
 
 If you choose `YAML` type, quizzes are stored as one file per bank under `plugins/ServerQuiz/quiz/`.
 The file names come from `config.table` in `config.yml`, for example `choice` loads `quiz/choice.yml`.
-Each file may contain a `Choice` section, a `Blank` section, or both.
+
+Each file declares its type in the header and lists its items under `entry`. The item fields use the same
+names as the MYSQL columns (`question`, `option_a` ~ `option_d`, `answer`, `score`, `reward`).
 
 `quiz/choice.yml`:
 
 ```yaml
-Choice:
-  - Question: "Which of the following is not a valid IP address?"
-    Options:
-      A: "172.28.45.56"
-      B: "192.168.0.1"
-      C: "240e:360:6f43:500:d14d:dbd0:97:b3b3"
-      D: "127.256.3.34"
-    Answer: D
-    Score: 10
-    Reward: DIAMOND
+type: choice
+entry:
+  - question: "Which of the following is not a valid IP address?"
+    option_a: "172.28.45.56"
+    option_b: "192.168.0.1"
+    option_c: "240e:360:6f43:500:d14d:dbd0:97:b3b3"
+    option_d: "127.256.3.34"
+    answer: D
+    score: 10
+    reward: DIAMOND
 ```
 
 `quiz/blank.yml`:
 
 ```yaml
-Blank:
-  - Question: "1+1=?"
-    Answer: "2"
-    Score: 10
-    Reward: DIAMOND
+type: blank
+entry:
+  - question: "1+1=?"
+    answer: "2"
+    score: 10
+    reward: DIAMOND
 ```
 
 > Upgrading from an older version? The plugin automatically splits the old `Quiz.yml` into `quiz/choice.yml` and `quiz/blank.yml`, then renames the original to `Quiz.yml.migrated`.
+> Files using the previous `Choice:` / `Blank:` sections are still read and are rewritten in the new format the next time the bank is saved.
 
-For a multiple-choice question, write all correct labels separated by commas, for example `Answer: "A,C"`. The order of the labels does not matter, and options are still shuffled randomly on the answer screen.
+For a multiple-choice question, write all correct labels separated by commas, for example `answer: "A,C"`. The order of the labels does not matter, and options are still shuffled randomly on the answer screen.
 
 ### MYSQL
 
@@ -169,6 +173,16 @@ gui:
 | `/quiz edit`       | edit the config         | `serverquiz.edit`   |
 | `/quiz reload`     | reload the config       | `serverquiz.edit`   |
 
-> Since version 1.1.1, you can change quiz in the game using command `/quiz edit choice` or `/quiz edit blank`. 
-> 
-> However, this function is still in development. You'd better do it through Database Manager.
+You can manage quiz entries in game:
+
+```text
+# Choice bank
+/quiz edit entry <table> insert <question> <optionA> <optionB> <optionC> <optionD> <answer> <score> <reward>
+/quiz edit entry <table> alter <id> <question> <optionA> <optionB> <optionC> <optionD> <answer> <score> <reward>
+
+# Blank bank
+/quiz edit entry <table> insert <question> <answer> <score> <reward>
+/quiz edit entry <table> alter <id> <question> <answer> <score> <reward>
+```
+
+`<id>` is the global quiz id shown by `/quiz show info <id>`. Run `/quiz reload` after editing to apply the change.

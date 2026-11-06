@@ -15,7 +15,7 @@ import org.rd806.serverquiz.quiz.QuizType;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class QuizGui {
+public class AnswerGui {
 
     // 选择题选项：选项下标、界面槽位、显示物品
     private record OptionSlot(int index, int slot, Material material) {}

@@ -7,8 +7,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.rd806.serverquiz.command.QuizCommand;
 import org.rd806.serverquiz.command.QuizTabCompleter;
 import org.rd806.serverquiz.compat.vault.Vault;
-import org.rd806.serverquiz.gui.QuizEvent;
-import org.rd806.serverquiz.gui.QuizGui;
+import org.rd806.serverquiz.gui.AnswerEvent;
+import org.rd806.serverquiz.gui.AnswerGui;
 import org.rd806.serverquiz.utils.PlaceHolder;
 import org.rd806.serverquiz.quiz.QuizConfig;
 import org.rd806.serverquiz.quiz.QuizEntry;
@@ -21,20 +21,18 @@ import java.util.logging.Logger;
 public final class ServerQuiz extends JavaPlugin {
     // 主类
     public static ServerQuiz main;
+    public static Logger logger;
+    // 配置文件
+    public static FileConfiguration config;
     // 配置变量
     public static PlaceHolder placeHolder;
     public static Vault vault;
 
     public QuizEntry currentQuiz;
     public QuizConfig quizConfig;
-    public QuizGui quizGui;
+    public AnswerGui quizGui;
 
     public QuizStorage storage;
-
-    // 日志文件
-    public static Logger logger;
-    // 配置文件
-    public static FileConfiguration config;
 
     public ServerQuiz() {
         main = this;
@@ -68,7 +66,7 @@ public final class ServerQuiz extends JavaPlugin {
         Objects.requireNonNull(Bukkit.getPluginCommand("serverquiz")).setExecutor(new QuizCommand());
         Objects.requireNonNull(Bukkit.getPluginCommand("serverquiz")).setTabCompleter(new QuizTabCompleter());
         // 注册事件
-        Bukkit.getPluginManager().registerEvents(new QuizEvent(), this);
+        Bukkit.getPluginManager().registerEvents(new AnswerEvent(), this);
 
         // 生成配置文件
         saveDefaultConfig();
@@ -76,7 +74,7 @@ public final class ServerQuiz extends JavaPlugin {
 
         this.currentQuiz = new QuizEntry();
         this.quizConfig = new QuizConfig();
-        this.quizGui = new QuizGui();
+        this.quizGui = new AnswerGui();
         // 必须在 quizConfig 赋值之后初始化，setQuiz 会回调 quizConfig.setMaxNum
         this.quizConfig.initial();
     }

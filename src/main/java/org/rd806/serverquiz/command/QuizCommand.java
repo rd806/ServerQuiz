@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.rd806.serverquiz.quiz.QuizConfig;
+import org.rd806.serverquiz.quiz.QuizType;
 import org.rd806.serverquiz.quiz.ScoreData;
 import org.rd806.serverquiz.ServerQuiz;
 import org.rd806.serverquiz.quiz.QuizEntry;
@@ -15,6 +16,10 @@ public class QuizCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NonNull CommandSender sender, @NonNull Command command, @NonNull String label, String @NonNull [] args) {
+        if (args.length == 0) {
+            sender.sendMessage("ServerQuiz version: " + ServerQuiz.main.getDescription().getVersion());
+            return false;
+        }
         switch (args[0]) {
             // 发送Quiz
             case "send" -> { return sendQuiz(sender, args); }
@@ -148,6 +153,7 @@ public class QuizCommand implements CommandExecutor {
                 if (args.length == 2) {
                     return true;
                 }
+                // 获取特定玩家的分数
                 String target = args[2];
                 ScoreData scoreData = ServerQuiz.main.storage.getPlayerScore(target);
                 if (scoreData == null) {
@@ -178,81 +184,151 @@ public class QuizCommand implements CommandExecutor {
                 return false;
             }
         }
-        // 修改存储格式
-        if (args[1].equals("storage")) {
-            String storage = ServerQuiz.main.quizConfig.getStorageType();
-            ServerQuiz.main.quizConfig.setStorageType(storage);
-            sender.sendMessage("The storage type of the Quiz has been set to" + storage);
+        if (args.length < 2) {
+            sender.sendMessage("Usage: /quiz edit storage|entry ...");
+            return false;
         }
-        // 修改选择题
-        if (args[1].equals("choice")) {
-            switch (args[2]) {
-                case "insert" -> {
-                    if (args.length < 11) {
-                        sender.sendMessage("Usage: /quiz edit choice insert <question> <optionA> <optionB> <optionC> <optionD> <answer, e.g. A or A,C> <score> <reward>");
-                        return false;
-                    }
-                    String question = args[3];
-                    String optionA = args[4];
-                    String optionB = args[5];
-                    String optionC = args[6];
-                    String optionD = args[7];
-                    String answer = args[8];
-                    int score;
-                    try {
-                        score = Integer.parseInt(args[9]);
-                    } catch (NumberFormatException e) {
-                        sender.sendMessage("§cThe score must be a number: " + args[9]);
-                        return false;
-                    }
-                    String reward = args[10];
-                    if (ServerQuiz.main.storage.addChoiceQuiz(question, optionA, optionB, optionC, optionD, answer, score, reward)) {
-                        sender.sendMessage("The choice quiz has been added!");
-                        sender.sendMessage("Please use /quiz reload to enable the change");
-                        return true;
-                    } else {
-                        sender.sendMessage("Failed to add choice quiz!");
-                        return false;
-                    }
-                }
-                case "delete" -> {
-                }
+
+        switch (args[1]) {
+            // 修改存储格式
+            case "storage" -> {
+                String storage = ServerQuiz.main.quizConfig.getStorageType();
+                ServerQuiz.main.quizConfig.setStorageType(storage);
+                sender.sendMessage("The storage type of the Quiz has been set to " + storage);
+                return true;
+            }
+            // 修改题目
+            case "entry" -> {
+                return editEntry(sender, args);
+            }
+            default -> {
+                sender.sendMessage("Unknown edit target: " + args[1]);
+                return false;
             }
         }
-        // 修改填空题
-        if (args[1].equals("blank")) {
-            switch (args[2]) {
-                case "insert" -> {
-                    if (args.length < 7) {
-                        sender.sendMessage("Usage: /quiz edit blank insert <question> <answer> <score> <reward>");
-                        return false;
-                    }
-                    String question = args[3];
-                    String answer = args[4];
-                    int score;
-                    try {
-                        score = Integer.parseInt(args[5]);
-                    } catch (NumberFormatException e) {
-                        sender.sendMessage("§cThe score must be a number: " + args[5]);
-                        return false;
-                    }
-                    String reward = args[6];
-                    if (ServerQuiz.main.storage.addBlankQuiz(question, answer, score, reward)) {
-                        sender.sendMessage("The blank quiz has been added!");
-                        sender.sendMessage("Please use /quiz reload to enable the change");
-                        return true;
-                    } else {
-                        sender.sendMessage("Failed to add blank quiz!");
-                        return false;
-                    }
-                }
-                case "delete" -> {
-                    return true;
-                }
+    }
+
+    /**
+     * 编辑题库条目
+     * <p>
+     * 选择题：
+     * /quiz edit entry &lt;table&gt; insert &lt;question&gt; &lt;optionA&gt; &lt;optionB&gt; &lt;optionC&gt; &lt;optionD&gt; &lt;answer&gt; &lt;score&gt; &lt;reward&gt;
+     * /quiz edit entry &lt;table&gt; alter &lt;id&gt; &lt;question&gt; &lt;optionA&gt; &lt;optionB&gt; &lt;optionC&gt; &lt;optionD&gt; &lt;answer&gt; &lt;score&gt; &lt;reward&gt;
+     * <p>
+     * 填空题：
+     * /quiz edit entry &lt;table&gt; insert &lt;question&gt; &lt;answer&gt; &lt;score&gt; &lt;reward&gt;
+     * /quiz edit entry &lt;table&gt; alter &lt;id&gt; &lt;question&gt; &lt;answer&gt; &lt;score&gt; &lt;reward&gt;
+     */
+    private boolean editEntry(CommandSender sender, String[] args) {
+        if (args.length < 4) {
+            sender.sendMessage("Usage: /quiz edit entry <table> insert|alter ...");
+            return false;
+        }
+
+        String table = args[2];
+        String operation = args[3];
+        QuizType type = ServerQuiz.main.storage.getTableType(table);
+        if (type == null) {
+            sender.sendMessage("The table is not valid or does not exist!");
+            return false;
+        }
+
+        boolean success;
+        switch (operation) {
+            case "insert" -> success = insertEntry(sender, args, table, type);
+            case "alter" -> success = alterEntry(sender, args, table, type);
+            default -> {
+                sender.sendMessage("Unknown operation: " + operation + ", use insert or alter.");
+                return false;
             }
         }
-        sender.sendMessage("Please use /quiz reload command to enable your changes!");
-        return true;
+
+        if (success) {
+            sender.sendMessage("The quiz has been " + (operation.equals("insert") ? "inserted" : "updated") + "!");
+            sender.sendMessage("Please use /quiz reload to enable the change");
+        } else {
+            sender.sendMessage("Failed to edit the quiz!");
+        }
+        return success;
+    }
+
+    /**
+     * 新增条目
+     */
+    private boolean insertEntry(CommandSender sender, String[] args, String table, QuizType type) {
+        if (type == QuizType.Choice) {
+            // /quiz edit entry <table> insert <question> <A> <B> <C> <D> <answer> <score> <reward>
+            if (args.length < 12) {
+                sender.sendMessage("Usage: /quiz edit entry <table> insert <question> <optionA> <optionB> <optionC> <optionD> <answer> <score> <reward>");
+                return false;
+            }
+            Integer score = parseScore(sender, args[10]);
+            if (score == null) return false;
+            return ServerQuiz.main.storage.addChoiceQuiz(table,
+                    args[4], args[5], args[6], args[7], args[8], args[9], score, args[11]);
+        }
+
+        // /quiz edit entry <table> insert <question> <answer> <score> <reward>
+        if (args.length < 8) {
+            sender.sendMessage("Usage: /quiz edit entry <table> insert <question> <answer> <score> <reward>");
+            return false;
+        }
+        Integer score = parseScore(sender, args[6]);
+        if (score == null) return false;
+        return ServerQuiz.main.storage.addBlankQuiz(table, args[4], args[5], score, args[7]);
+    }
+
+    /**
+     * 修改条目，id 为全局编号（可通过 /quiz show info &lt;id&gt; 查看）
+     */
+    private boolean alterEntry(CommandSender sender, String[] args, String table, QuizType type) {
+        if (args.length < 5) {
+            sender.sendMessage("Usage: /quiz edit entry <table> alter <id> ...");
+            return false;
+        }
+        Integer id = parseId(sender, args[4]);
+        if (id == null) return false;
+
+        if (type == QuizType.Choice) {
+            // /quiz edit entry <table> alter <id> <question> <A> <B> <C> <D> <answer> <score> <reward>
+            if (args.length < 13) {
+                sender.sendMessage("Usage: /quiz edit entry <table> alter <id> <question> <optionA> <optionB> <optionC> <optionD> <answer> <score> <reward>");
+                return false;
+            }
+            Integer score = parseScore(sender, args[11]);
+            if (score == null) return false;
+            return ServerQuiz.main.storage.updateChoiceQuiz(table, id,
+                    args[5], args[6], args[7], args[8], args[9], args[10], score, args[12]);
+        }
+
+        // /quiz edit entry <table> alter <id> <question> <answer> <score> <reward>
+        if (args.length < 9) {
+            sender.sendMessage("Usage: /quiz edit entry <table> alter <id> <question> <answer> <score> <reward>");
+            return false;
+        }
+        Integer score = parseScore(sender, args[7]);
+        if (score == null) return false;
+        return ServerQuiz.main.storage.updateBlankQuiz(table, id, args[5], args[6], score, args[8]);
+    }
+
+    // 解析分数
+    private Integer parseScore(CommandSender sender, String value) {
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            sender.sendMessage("§cThe score must be a number: " + value);
+            return null;
+        }
+    }
+
+    // 解析条目编号
+    private Integer parseId(CommandSender sender, String value) {
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            sender.sendMessage("§cThe id must be a number: " + value);
+            return null;
+        }
     }
 
     /**

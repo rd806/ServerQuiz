@@ -10,12 +10,12 @@ commands:
     aliases: quiz
 
 permission:
-  # 回答权限
+  # Permission to answer quizzes
   serverquiz.open:
     default: true
-  # 查看权限
+  # Permission to view quiz information
   serverquiz.show:
     default: false
-  # 编辑权限
+  # Permission to edit quizzes
   serverquiz.edit:
     default: false

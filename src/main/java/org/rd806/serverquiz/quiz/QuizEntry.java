@@ -11,13 +11,13 @@ public class QuizEntry {
     private int id;
     private QuizType type;
     private String question;
+    private int score;
+    private ItemStack reward;
     // 答案。选择题为标签字符串（单个 "A" 或多个 "A,C"），填空题为答案文本
     private String answer;
     private List<QuizOption> options;
     // 选择题正确答案的内容集合，与标签及选项顺序无关
     private Set<String> answerContents;
-    private int score;
-    private ItemStack reward;
 
     // 回答过的玩家
     private Set<UUID> answeredPlayers;
@@ -181,8 +181,9 @@ public class QuizEntry {
 
     public ItemStack getReward() { return reward; }
     public void setReward(String rewardName) {
+        // 空字符串表示清除奖励
         if (rewardName == null || rewardName.isEmpty()) {
-            ServerQuiz.logger.warning("Reward of the quiz is empty!");
+            this.reward = null;
             return;
         }
         Material rewardMaterial = Material.matchMaterial(rewardName.toUpperCase());

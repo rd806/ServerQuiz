@@ -15,7 +15,7 @@ import org.rd806.serverquiz.ServerQuiz;
 /**
  * 处理 Quiz GUI 界面的事件
  */
-public class QuizEvent implements Listener {
+public class AnswerEvent implements Listener {
 
     @EventHandler
     public void onClick(InventoryClickEvent event) {

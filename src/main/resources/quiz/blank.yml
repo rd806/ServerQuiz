@@ -1,5 +1,13 @@
-Blank:
-  - Question: "1+1=?"
-    Answer: "2"
-    Score: 10
-    Reward: DIAMOND
+##############################################
+##            Example Blank File            ##
+##############################################
+
+
+# Quiz bank type: choice (multiple choice) or blank (fill in the blank)
+type: blank
+# Entry fields match the MYSQL column names
+entry:
+  - question: "1+1=?"
+    answer: "2"
+    score: 10
+    reward: DIAMOND
